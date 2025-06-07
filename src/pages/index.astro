@@ -131,7 +131,6 @@ import UploadButton from '../components/UploadButton.astro';
 
   document.getElementById('generate')?.addEventListener('click', async () => {
     const prompt = (document.getElementById('prompt') as HTMLTextAreaElement).value;
-    const lora = (document.getElementById('loraSelect') as HTMLSelectElement).value;
     
     if (!prompt) {
       alert('Please enter a prompt');
@@ -143,8 +142,6 @@ import UploadButton from '../components/UploadButton.astro';
       const maskData = canvas.getMaskData();
       const imageUrl = await imageGenerator.generateImage({
         prompt,
-        lora,
-        mask: maskData
       });
       
       appState.setGeneratedImage(imageUrl);

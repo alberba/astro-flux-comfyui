@@ -1,16 +1,14 @@
 export class ImageGenerator {
   private apiUrl: string;
 
-  constructor(apiUrl: string = "http://localhost:8188") {
-    this.apiUrl = apiUrl;
+  constructor() {
+    this.apiUrl = "http://localhost:8000";
   }
 
-  async fetchLoras(): Promise<Array<{ name: string }>> {
+  async fetchLoras(): Promise<{ name: string }[]> {
     try {
       const response = await fetch(`${this.apiUrl}/loras`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch LoRAs");
-      }
+      if (!response.ok) throw new Error("Failed to fetch LoRAs");
       return await response.json();
     } catch (error) {
       console.error("Error fetching LoRAs:", error);
@@ -20,11 +18,9 @@ export class ImageGenerator {
 
   async generateImage(params: {
     prompt: string;
-    lora: string;
-    mask: string;
   }): Promise<string> {
     try {
-      const response = await fetch(`${this.apiUrl}/prompt`, {
+      const response = await fetch(`${this.apiUrl}/api/generate-simple`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,10 +28,7 @@ export class ImageGenerator {
         body: JSON.stringify(params),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to generate image");
-      }
-
+      if (!response.ok) throw new Error("Failed to generate image");
       const data = await response.json();
       return data.imageUrl;
     } catch (error) {
