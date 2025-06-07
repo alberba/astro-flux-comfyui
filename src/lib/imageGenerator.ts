@@ -5,19 +5,9 @@ export class ImageGenerator {
     this.apiUrl = "http://localhost:8000";
   }
 
-  async fetchLoras(): Promise<{ name: string }[]> {
-    try {
-      const response = await fetch(`${this.apiUrl}/loras`);
-      if (!response.ok) throw new Error("Failed to fetch LoRAs");
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching LoRAs:", error);
-      return [];
-    }
-  }
-
   async generateImage(params: {
     prompt: string;
+    mask: string;
   }): Promise<string> {
     try {
       const response = await fetch(`${this.apiUrl}/api/generate-simple`, {
