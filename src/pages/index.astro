@@ -8,6 +8,14 @@ import UploadButton from '../components/UploadButton.astro';
   <div class="max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold text-center mb-8">ComfyUI Image Generator</h1>
     
+    <!-- Generated Image Display -->
+    <div class="mt-8 bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-semibold mb-4">Generated Image</h2>
+      <div id="generatedImage" class="w-full h-96 border rounded bg-gray-50 flex items-center justify-center">
+        <p class="text-gray-500">Generated image will appear here</p>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- Image Upload and Canvas Section -->
       <div class="bg-white p-6 rounded-lg shadow-md">
@@ -45,22 +53,13 @@ import UploadButton from '../components/UploadButton.astro';
       <div class="bg-white p-6 rounded-lg shadow-md">
         <h2 class="text-xl font-semibold mb-4">Generation Settings</h2>
         <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">LoRA Selection</label>
-            <select
-              id="loraSelect"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value="">Select a LoRA</option>
-            </select>
-          </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700">Prompt</label>
             <textarea
               id="prompt"
               rows="4"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
               placeholder="Introduce el prompt"
             ></textarea>
           </div>
@@ -72,14 +71,6 @@ import UploadButton from '../components/UploadButton.astro';
             Generate Image
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Generated Image Display -->
-    <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
-      <h2 class="text-xl font-semibold mb-4">Generated Image</h2>
-      <div id="generatedImage" class="w-full h-96 border rounded bg-gray-50 flex items-center justify-center">
-        <p class="text-gray-500">Generated image will appear here</p>
       </div>
     </div>
   </div>
@@ -133,7 +124,7 @@ import UploadButton from '../components/UploadButton.astro';
     const prompt = (document.getElementById('prompt') as HTMLTextAreaElement).value;
     
     if (!prompt) {
-      alert('Please enter a prompt');
+      alert('Por favor, ingresa un prompt');
       return;
     }
 
@@ -142,6 +133,7 @@ import UploadButton from '../components/UploadButton.astro';
       const maskData = canvas.getMaskData();
       const imageUrl = await imageGenerator.generateImage({
         prompt,
+        mask: maskData
       });
       
       appState.setGeneratedImage(imageUrl);
@@ -152,29 +144,9 @@ import UploadButton from '../components/UploadButton.astro';
     } catch (error) {
       appState.setError('Failed to generate image. Please try again.');
       console.error('Error generating image:', error);
-      alert('Failed to generate image. Please try again.');
+      alert('Failed to generate image. Por favor, intenta de nuevo.');
     }
   });
-
-  // Cargar LoRAs al iniciar
-  async function loadLoras() {
-    try {
-      const loras = await imageGenerator.fetchLoras();
-      const loraSelect = document.getElementById('loraSelect');
-      if (loraSelect) {
-        loras.forEach(lora => {
-          const option = document.createElement('option');
-          option.value = lora.name;
-          option.textContent = lora.name;
-          loraSelect.appendChild(option);
-        });
-      }
-    } catch (error) {
-      console.error('Error loading LoRAs:', error);
-    }
-  }
-
-  loadLoras();
 
   // Manejar redimensionamiento
   window.addEventListener('resize', () => {
@@ -183,10 +155,10 @@ import UploadButton from '../components/UploadButton.astro';
 
   // Suscribirse a cambios de estado
   appState.subscribe((state) => {
-    const generateButton = document.getElementById('generate');
+    const generateButton = document.getElementById('generate') as HTMLButtonElement;
     if (generateButton) {
       generateButton.disabled = state.isLoading;
-      generateButton.textContent = state.isLoading ? 'Generating...' : 'Generate Image';
+      generateButton.textContent = state.isLoading ? 'Generando...' : 'Generar Imagen';
     }
 
     if (state.error) {

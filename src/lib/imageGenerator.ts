@@ -7,6 +7,7 @@ export class ImageGenerator {
 
   async generateImage(params: {
     prompt: string;
+    mask: string;
   }): Promise<string> {
     try {
       const response = await fetch(`${this.apiUrl}/api/generate-simple`, {
