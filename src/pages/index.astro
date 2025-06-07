@@ -1,16 +1,199 @@
 ---
-
+import Layout from '../layouts/Layout.astro';
+import DropZone from '../components/DropZone.astro';
+import UploadButton from '../components/UploadButton.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="ComfyUI Image Generator">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-8">ComfyUI Image Generator</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Image Upload and Canvas Section -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Carga la imagen y crea la máscara</h2>
+        <div class="space-y-4">
+          <DropZone id="dropZone">
+            <UploadButton id="imageUpload" />
+          </DropZone>
+          <div class="flex gap-2">
+            <button
+              id="clearMask"
+              class="flex-1 bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 hidden"
+            >
+              Limpiar Máscara
+            </button>
+            <div class="flex items-center gap-2 hidden" id="maskColorSelector">
+              <div class="flex gap-2">
+                <button
+                  id="blackMask"
+                  class="w-8 h-8 rounded-full bg-black border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  title="Máscara negra"
+                ></button>
+                <button
+                  id="whiteMask"
+                  class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  title="Máscara blanca"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generation Settings Section -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Generation Settings</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">LoRA Selection</label>
+            <select
+              id="loraSelect"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="">Select a LoRA</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Prompt</label>
+            <textarea
+              id="prompt"
+              rows="4"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="Introduce el prompt"
+            ></textarea>
+          </div>
+
+          <button
+            id="generate"
+            class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700"
+          >
+            Generate Image
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generated Image Display -->
+    <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-4">Generated Image</h2>
+      <div id="generatedImage" class="w-full h-96 border rounded bg-gray-50 flex items-center justify-center">
+        <p class="text-gray-500">Generated image will appear here</p>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { MaskCanvas } from '../lib/canvas';
+  import { ImageGenerator } from '../lib/imageGenerator';
+  import { appState } from '../lib/appState';
+
+  // Inicializar componentes
+  const canvas = new MaskCanvas('dropZone-canvas');
+  const imageGenerator = new ImageGenerator();
+
+  // Event Listeners
+  interface ImageLoadedEvent extends CustomEvent {
+    detail: string;
+  }
+
+  window.addEventListener('image-loaded', ((e: ImageLoadedEvent) => {
+    const imageUrl = e.detail;
+    canvas.loadImage(imageUrl);
+    document.getElementById('clearMask')?.classList.remove('hidden');
+    document.getElementById('maskColorSelector')?.classList.remove('hidden');
+  }) as EventListener);
+
+  document.getElementById('clearMask')?.addEventListener('click', () => {
+    canvas.clearMask();
+  });
+
+  // Color selector buttons
+  const blackMask = document.getElementById('blackMask');
+  const whiteMask = document.getElementById('whiteMask');
+
+  blackMask?.addEventListener('click', () => {
+    canvas.setMaskColor('black');
+    blackMask.classList.add('ring-2', 'ring-indigo-500');
+    whiteMask?.classList.remove('ring-2', 'ring-indigo-500');
+  });
+
+  whiteMask?.addEventListener('click', () => {
+    canvas.setMaskColor('white');
+    whiteMask.classList.add('ring-2', 'ring-indigo-500');
+    blackMask?.classList.remove('ring-2', 'ring-indigo-500');
+  });
+
+  // Set initial color
+  blackMask?.classList.add('ring-2', 'ring-indigo-500');
+
+  document.getElementById('generate')?.addEventListener('click', async () => {
+    const prompt = (document.getElementById('prompt') as HTMLTextAreaElement).value;
+    const lora = (document.getElementById('loraSelect') as HTMLSelectElement).value;
+    
+    if (!prompt) {
+      alert('Please enter a prompt');
+      return;
+    }
+
+    try {
+      appState.startLoading();
+      const maskData = canvas.getMaskData();
+      const imageUrl = await imageGenerator.generateImage({
+        prompt,
+        lora,
+        mask: maskData
+      });
+      
+      appState.setGeneratedImage(imageUrl);
+      const generatedImage = document.getElementById('generatedImage');
+      if (generatedImage) {
+        generatedImage.innerHTML = `<img src="${imageUrl}" alt="Generated image" class="max-w-full max-h-full" />`;
+      }
+    } catch (error) {
+      appState.setError('Failed to generate image. Please try again.');
+      console.error('Error generating image:', error);
+      alert('Failed to generate image. Please try again.');
+    }
+  });
+
+  // Cargar LoRAs al iniciar
+  async function loadLoras() {
+    try {
+      const loras = await imageGenerator.fetchLoras();
+      const loraSelect = document.getElementById('loraSelect');
+      if (loraSelect) {
+        loras.forEach(lora => {
+          const option = document.createElement('option');
+          option.value = lora.name;
+          option.textContent = lora.name;
+          loraSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error('Error loading LoRAs:', error);
+    }
+  }
+
+  loadLoras();
+
+  // Manejar redimensionamiento
+  window.addEventListener('resize', () => {
+    canvas.resize();
+  });
+
+  // Suscribirse a cambios de estado
+  appState.subscribe((state) => {
+    const generateButton = document.getElementById('generate');
+    if (generateButton) {
+      generateButton.disabled = state.isLoading;
+      generateButton.textContent = state.isLoading ? 'Generating...' : 'Generate Image';
+    }
+
+    if (state.error) {
+      alert(state.error);
+    }
+  });
+</script>

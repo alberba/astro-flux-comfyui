@@ -1,0 +1,80 @@
+---
+interface Props {
+  id: string;
+  onDrop?: (file: File) => void;
+}
+
+const { id, onDrop } = Astro.props;
+---
+
+<div
+  id={id}
+  class="relative w-full h-96 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors"
+>
+  <div id={`${id}-content`} class="text-center p-4">
+    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <p class="mt-2 text-sm text-gray-600">
+      Arrastra y suelta tu imagen aquí, o
+    </p>
+    <slot />
+  </div>
+  <canvas
+    id={`${id}-canvas`}
+    class="absolute inset-0 w-full h-full hidden"
+  ></canvas>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('dropZone');
+    const dropZoneContent = document.getElementById('dropZone-content');
+    const canvas = document.getElementById('dropZone-canvas');
+
+    // Prevenir comportamientos por defecto
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+
+    // Resaltar zona de drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone?.addEventListener(eventName, () => {
+        dropZone?.classList.add('border-indigo-500');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone?.addEventListener(eventName, () => {
+        dropZone?.classList.remove('border-indigo-500');
+      });
+    });
+
+    // Manejar archivos soltados
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt) {
+        const files = dt.files;
+        if (files.length > 0) {
+          const file = files[0];
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const imageUrl = event.target?.result as string;
+              // Ocultar contenido y mostrar canvas
+              dropZoneContent?.classList.add('hidden');
+              canvas?.classList.remove('hidden');
+              // Disparar evento con la URL de la imagen
+              const customEvent = new CustomEvent('image-loaded', { detail: imageUrl });
+              window.dispatchEvent(customEvent);
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    });
+  });
+</script> 
