@@ -2,6 +2,7 @@ type AppState = {
   isLoading: boolean;
   error: string | null;
   generatedImageUrl: string | null;
+  intermediateImages: string[];
 };
 
 class AppStateManager {
@@ -9,6 +10,7 @@ class AppStateManager {
     isLoading: false,
     error: null,
     generatedImageUrl: null,
+    intermediateImages: [],
   };
 
   private listeners: ((state: AppState) => void)[] = [];
@@ -52,6 +54,12 @@ class AppStateManager {
 
   public clearGeneratedImage() {
     this.setState({ generatedImageUrl: null });
+  }
+
+  public addIntermediateImage(url: string) {
+    this.setState({
+      intermediateImages: [...this.state.intermediateImages, url],
+    });
   }
 }
 

@@ -11,7 +11,7 @@ import UploadButton from '../components/UploadButton.astro';
     <!-- Generated Image Display -->
     <div class="mt-8 bg-white p-6 rounded-lg shadow-md mb-8">
       <h2 class="text-xl font-semibold mb-4">Generated Image</h2>
-      <div id="generatedImage" class="w-full h-96 border rounded bg-gray-50 flex items-center justify-center">
+      <div id="generatedImage" class="w-full h-96 border rounded bg-gray-50 flex items-center justify-center relative">
         <p class="text-gray-500">Generated image will appear here</p>
       </div>
     </div>
@@ -85,6 +85,11 @@ import UploadButton from '../components/UploadButton.astro';
   const canvas = new MaskCanvas('dropZone-canvas');
   const imageGenerator = new ImageGenerator();
 
+  // Configurar callback para imágenes intermedias
+  imageGenerator.setIntermediateImageCallback((imageUrl) => {
+    appState.addIntermediateImage(imageUrl);
+  });
+
   // Event Listeners
   interface ImageLoadedEvent extends CustomEvent {
     detail: string;
@@ -137,10 +142,6 @@ import UploadButton from '../components/UploadButton.astro';
       });
       
       appState.setGeneratedImage(imageUrl);
-      const generatedImage = document.getElementById('generatedImage');
-      if (generatedImage) {
-        generatedImage.innerHTML = `<img src="${imageUrl}" alt="Generated image" class="max-w-full max-h-full" />`;
-      }
     } catch (error) {
       appState.setError('Failed to generate image. Please try again.');
       console.error('Error generating image:', error);
@@ -163,6 +164,31 @@ import UploadButton from '../components/UploadButton.astro';
 
     if (state.error) {
       alert(state.error);
+    }
+
+    // Actualizar imagen generada e imágenes intermedias
+    const generatedImage = document.getElementById('generatedImage');
+    if (generatedImage) {
+      if (state.intermediateImages.length > 0) {
+        // Mostrar la última imagen intermedia
+        const lastIntermediateImage = state.intermediateImages[state.intermediateImages.length - 1];
+        generatedImage.innerHTML = `
+          <img src="${lastIntermediateImage}" alt="Intermediate image" class="max-w-full max-h-full" />
+          <div class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+            Step ${state.intermediateImages.length}
+          </div>
+        `;
+      } else if (state.generatedImageUrl) {
+        // Mostrar la imagen final
+        generatedImage.innerHTML = `
+          <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
+          <div class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+            Final
+          </div>
+        `;
+      } else {
+        generatedImage.innerHTML = '<p class="text-gray-500">Generated image will appear here</p>';
+      }
     }
   });
 </script>
