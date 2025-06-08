@@ -3,10 +3,23 @@ export class ImageGenerator {
   private wsUrl: string;
   private ws: WebSocket | null = null;
   private onIntermediateImage: ((imageUrl: string) => void) | null = null;
+  private clientId: string;
 
   constructor() {
     this.apiUrl = "http://localhost:8000";
     this.wsUrl = "ws://localhost:8000/ws";
+    this.clientId = this.generateClientId();
+  }
+
+  private generateClientId(): string {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
   }
 
   setIntermediateImageCallback(callback: (imageUrl: string) => void) {
@@ -14,7 +27,9 @@ export class ImageGenerator {
   }
 
   private connectWebSocket() {
-    this.ws = new WebSocket(this.wsUrl);
+    const wsUrl = new URL(this.wsUrl);
+    wsUrl.searchParams.append("clientId", this.clientId);
+    this.ws = new WebSocket(wsUrl.toString());
 
     this.ws.onmessage = (event) => {
       try {
@@ -51,7 +66,10 @@ export class ImageGenerator {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          ...params,
+          clientId: this.clientId,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to generate image");
