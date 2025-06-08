@@ -169,17 +169,17 @@ import UploadButton from '../components/UploadButton.astro';
     // Actualizar imagen generada e imágenes intermedias
     const generatedImage = document.getElementById('generatedImage');
     if (generatedImage) {
-      if (state.intermediateImages.length > 0) {
-        // Mostrar la última imagen intermedia
-        const lastIntermediateImage = state.intermediateImages[state.intermediateImages.length - 1];
+      if (state.isLoading && state.progress) {
+        const percent = Math.round((state.progress.value / state.progress.max) * 100);
         generatedImage.innerHTML = `
-          <img src="${lastIntermediateImage}" alt="Intermediate image" class="max-w-full max-h-full" />
-          <div class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-            Step ${state.intermediateImages.length}
+          <div class="w-full flex flex-col items-center justify-center h-full">
+            <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
+              <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
+            </div>
+            <span class="text-indigo-700 font-semibold">${percent}%</span>
           </div>
         `;
       } else if (state.generatedImageUrl) {
-        // Mostrar la imagen final
         generatedImage.innerHTML = `
           <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
           <div class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">

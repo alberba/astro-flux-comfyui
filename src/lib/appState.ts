@@ -2,6 +2,7 @@ type AppState = {
   isLoading: boolean;
   error: string | null;
   generatedImageUrl: string | null;
+  progress: { value: number; max: number } | null;
   intermediateImages: string[];
 };
 
@@ -10,6 +11,7 @@ class AppStateManager {
     isLoading: false,
     error: null,
     generatedImageUrl: null,
+    progress: null,
     intermediateImages: [],
   };
 
@@ -60,6 +62,14 @@ class AppStateManager {
     this.setState({
       intermediateImages: [...this.state.intermediateImages, url],
     });
+  }
+
+  public setProgress(progress: { value: number; max: number }) {
+    this.setState({ progress });
+  }
+
+  public clearProgress() {
+    this.setState({ progress: null });
   }
 }
 

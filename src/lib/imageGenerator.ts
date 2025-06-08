@@ -1,3 +1,5 @@
+import { appState } from "./appState";
+
 export class ImageGenerator {
   private apiUrl: string;
   private wsUrl: string;
@@ -37,6 +39,9 @@ export class ImageGenerator {
         if (data.type === "intermediate_image" && this.onIntermediateImage) {
           this.onIntermediateImage(data.imageUrl);
         }
+        if (data.type === "progress" && data.data) {
+          appState.setProgress({ value: data.data.value, max: data.data.max });
+        }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
       }
@@ -60,6 +65,7 @@ export class ImageGenerator {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         this.connectWebSocket();
       }
+      appState.clearProgress();
 
       const response = await fetch(`${this.apiUrl}/api/generate-simple`, {
         method: "POST",
