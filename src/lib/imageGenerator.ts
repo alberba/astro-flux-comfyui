@@ -59,6 +59,7 @@ export class ImageGenerator {
     seed?: number;
     cfg?: number;
     steps?: number;
+    number?: number;
   }): Promise<{ imageUrl: string; seed: number }> {
     try {
       // Conectar WebSocket si no está conectado

@@ -70,12 +70,25 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
         </div>
-        <button
-          id="generate"
-          class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700"
-        >
-          Generate Image
-        </button>
+        <div class="flex space-x-2">
+          <button
+            id="generate"
+            class="flex-grow bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700"
+          >
+            Generate Image
+          </button>
+          <div class="flex items-center space-x-2">
+            <input 
+              type="number" 
+              id=ex-size" 
+              min="1" 
+              max="10" 
+              value="1" 
+              class="w-16 rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm"
+              title="Number of sequential generations"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -98,9 +111,16 @@ import Layout from '../layouts/Layout.astro';
     const seedInput = document.getElementById('seed') as HTMLInputElement;
     const cfgInput = document.getElementById('cfg-number') as HTMLInputElement;
     const stepsInput = document.getElementById('steps-number') as HTMLInputElement;
+    const exSizeInput = document.getElementById('ex-size') as HTMLInputElement;
     
     if (!prompt) {
       alert('Por favor, ingresa un prompt');
+      return;
+    }
+
+    const numImages = parseInt(exSizeInput.value) || 1;
+    if (numImages < 1 || numImages > 10) {
+      alert('El número de ejecuciones debe estar entre 1 y 10');
       return;
     }
 
@@ -111,6 +131,7 @@ import Layout from '../layouts/Layout.astro';
         seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
         cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
         steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
+        number: numImages > 1 ? numImages : undefined
       });
       
       // Guardar la última seed usada
