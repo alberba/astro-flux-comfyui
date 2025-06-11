@@ -56,6 +56,9 @@ export class ImageGenerator {
   async generateImage(params: {
     prompt: string;
     mask?: string;
+    seed?: number;
+    cfg?: number;
+    steps?: number;
   }): Promise<string> {
     try {
       // Conectar WebSocket si no está conectado

@@ -79,6 +79,9 @@ import Layout from '../layouts/Layout.astro';
 
   document.getElementById('generate')?.addEventListener('click', async () => {
     const prompt = (document.getElementById('prompt') as HTMLTextAreaElement).value;
+    const seedInput = document.getElementById('seed') as HTMLInputElement;
+    const cfgInput = document.getElementById('cfg-number') as HTMLInputElement;
+    const stepsInput = document.getElementById('steps-number') as HTMLInputElement;
     
     if (!prompt) {
       alert('Por favor, ingresa un prompt');
@@ -89,6 +92,9 @@ import Layout from '../layouts/Layout.astro';
       appState.startLoading();
       const imageUrl = await imageGenerator.generateImage({
         prompt,
+        seed: seedInput.value ? parseInt(seedInput.value) : undefined,
+        cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
+        steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
       });
       
       appState.setGeneratedImage(imageUrl);
