@@ -59,7 +59,7 @@ export class ImageGenerator {
     seed?: number;
     cfg?: number;
     steps?: number;
-  }): Promise<string> {
+  }): Promise<{ imageUrl: string; seed: number }> {
     try {
       // Conectar WebSocket si no está conectado
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -80,7 +80,7 @@ export class ImageGenerator {
 
       if (!response.ok) throw new Error("Failed to generate image");
       const data = await response.json();
-      return data.imageUrl;
+      return { imageUrl: data.imageUrl, seed: data.seed };
     } catch (error) {
       console.error("Error generating image:", error);
       throw error;

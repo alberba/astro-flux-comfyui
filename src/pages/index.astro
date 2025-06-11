@@ -38,20 +38,35 @@ import Layout from '../layouts/Layout.astro';
         <div id="advanced-fields" style="display:none;">
           <div>
             <label class="block text-sm font-medium text-gray-700">Seed</label>
-            <input type="number" id="seed" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2" placeholder="Random" min="0" />
+            <div class="flex space-x-2">
+              <input type="number" id="seed" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2" placeholder="-1 para aleatorio" min="-1" />
+              <button id="last-seed" class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.70714 3.29289C9.09766 3.68342 9.09766 4.31658 8.70714 4.70711L6.41424 7H14C17.866 7 21 10.134 21 14C21 17.866 17.866 21 14 21H8.15388C7.60159 21 7.15388 20.5523 7.15388 20C7.15388 19.4477 7.60159 19 8.15388 19H14C16.7615 19 19 16.7614 19 14C19 11.2386 16.7615 9 14 9H6.41424L8.70714 11.2929C9.09766 11.6834 9.09766 12.3166 8.70714 12.7071C8.31661 13.0976 7.68345 13.0976 7.29292 12.7071L2.58582 8L7.29292 3.29289C7.68345 2.90237 8.31661 2.90237 8.70714 3.29289Z" fill="#0F1729"/>
+                </svg>
+              </button>
+              <button id="random-seed" class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg class="h-5 w-5" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <g fill="#000000"> 
+                    <path d="M5 4a1 1 0 000 2h.01a1 1 0 000-2H5zM7 8a1 1 0 011-1h.01a1 1 0 010 2H8a1 1 0 01-1-1zM11.01 10a1 1 0 100 2h.01a1 1 0 100-2h-.01z"/>   
+                    <path fill-rule="evenodd" d="M3.25 1A2.25 2.25 0 001 3.25v9.5A2.25 2.25 0 003.25 15h9.5A2.25 2.25 0 0015 12.75v-9.5A2.25 2.25 0 0012.75 1h-9.5zM2.5 3.25a.75.75 0 01.75-.75h9.5a.75.75 0 01.75.75v9.5a.75.75 0 01-.75.75h-9.5a.75.75 0 01-.75-.75v-9.5z" clip-rule="evenodd"/>     
+                  </g>                  
+                </svg>
+              </button>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">CFG</label>
             <div class="flex items-center space-x-2">
-              <input type="range" id="cfg-range" min="0.1" max="20" value="1" step="0.01" class="flex-grow">
-              <input type="number" id="cfg-number" min="0.1" max="20" value="1" step="0.01" class="w-14 text-right rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 text-sm">
+              <input type="range" id="cfg-range" min="0.1" max="10" value="1" step="0.01" class="flex-grow">
+              <input type="number" id="cfg-number" min="0.1" max="10" value="1" step="0.01" class="w-14 text-right rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 text-sm">
             </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Steps</label>
             <div class="flex items-center space-x-2">
-              <input type="range" id="steps-range" min="1" max="100" value="25" class="flex-grow">
-              <input type="number" id="steps-number" min="1" max="100" value="25" class="w-14 text-right rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 text-sm">
+              <input type="range" id="steps-range" min="1" max="50" value="25" class="flex-grow">
+              <input type="number" id="steps-number" min="1" max="50" value="25" class="w-14 text-right rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 text-sm">
             </div>
           </div>
         </div>
@@ -71,6 +86,7 @@ import Layout from '../layouts/Layout.astro';
   import { appState } from '../lib/appState';
 
   const imageGenerator = new ImageGenerator();
+  let lastUsedSeed: number | null = null;
 
   // Configurar callback para imágenes intermedias
   imageGenerator.setIntermediateImageCallback((imageUrl) => {
@@ -90,12 +106,15 @@ import Layout from '../layouts/Layout.astro';
 
     try {
       appState.startLoading();
-      const imageUrl = await imageGenerator.generateImage({
+      const { imageUrl, seed } = await imageGenerator.generateImage({
         prompt,
-        seed: seedInput.value ? parseInt(seedInput.value) : undefined,
+        seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
         cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
         steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
       });
+      
+      // Guardar la última seed usada
+      lastUsedSeed = seed;
       
       appState.setGeneratedImage(imageUrl);
     } catch (error) {
@@ -103,6 +122,20 @@ import Layout from '../layouts/Layout.astro';
       console.error('Error generating image:', error);
       alert('Failed to generate image. Por favor, intenta de nuevo.');
     }
+  });
+
+  // Botón para recuperar la última seed
+  document.getElementById('last-seed')?.addEventListener('click', () => {
+    if (lastUsedSeed !== null) {
+      const seedInput = document.getElementById('seed') as HTMLInputElement;
+      seedInput.value = lastUsedSeed.toString();
+    }
+  });
+
+  // Botón para establecer seed aleatorio
+  document.getElementById('random-seed')?.addEventListener('click', () => {
+    const seedInput = document.getElementById('seed') as HTMLInputElement;
+    seedInput.value = '-1';
   });
 
   // Suscribirse a cambios de estado
