@@ -6,8 +6,14 @@ import Layout from '../layouts/Layout.astro';
   <div class="max-w-3xl mx-auto">
     <!-- Generated Image Display -->
     <div class="bg-white p-4 rounded-lg shadow-md mb-4">
-      <div id="generatedImage" class="w-full h-[560px] border rounded bg-gray-50 flex items-center justify-center relative">
+      <div id="generatedImage" class="w-full aspect-[3/2] border rounded bg-gray-50 flex items-center justify-center relative group">
         <p class="text-gray-500">Generated image will appear here</p>
+        <!-- Image History Slider -->
+        <div id="imageHistory" class="absolute bottom-0 left-0 right-0 bg-black/50 p-2 hidden group-hover:block transition-all duration-300">
+          <div class="flex space-x-2 overflow-x-auto pb-2">
+            <!-- History images will be added here dynamically -->
+          </div>
+        </div>
       </div>
     </div>
     <!-- Prompt y botón -->
@@ -80,7 +86,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="flex items-center space-x-2">
             <input 
               type="number" 
-              id=ex-size" 
+              id="ex-size" 
               min="1" 
               max="10" 
               value="1" 
@@ -126,18 +132,25 @@ import Layout from '../layouts/Layout.astro';
 
     try {
       appState.startLoading();
-      const { imageUrl, seed } = await imageGenerator.generateImage({
-        prompt,
-        seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
-        cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
-        steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
-        number: numImages > 1 ? numImages : undefined
-      });
+      appState.startMultipleGeneration(numImages);
       
-      // Guardar la última seed usada
-      lastUsedSeed = seed;
-      
-      appState.setGeneratedImage(imageUrl);
+      // Generar las imágenes en secuencia
+      for (let i = 0; i < numImages; i++) {
+        appState.updateGenerationProgress(i + 1);
+        const { imageUrl, seed } = await imageGenerator.generateImage({
+          prompt,
+          seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
+          cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
+          steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
+        });
+        
+        // Guardar la última seed usada
+        lastUsedSeed = seed;
+        
+        // Actualizar la UI con cada imagen generada
+        appState.setGeneratedImage(imageUrl);
+      }
+      appState.finishMultipleGeneration();
     } catch (error) {
       appState.setError('Failed to generate image. Please try again.');
       console.error('Error generating image:', error);
@@ -185,8 +198,31 @@ import Layout from '../layouts/Layout.astro';
           </div>
         `;
       } else if (state.generatedImageUrl) {
+        const percent = state.progress ? Math.round((state.progress.value / state.progress.max) * 100) : null;
         generatedImage.innerHTML = `
-          <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
+          <div class="relative w-full h-full flex items-center justify-center">
+            ${state.progress && state.isGeneratingMultiple ? `
+            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/10 backdrop-blur-md">
+              <span class="text-white font-semibold">Generando imagen ${state.currentGeneration} de ${state.totalGenerations}</span>
+              <div class="w-2/3 bg-gray-200 rounded-full h-6 my-4 overflow-hidden">
+                <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
+              </div>
+              <span class="text-white font-semibold">${percent}%</span>
+            </div>`: ``}
+            <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full object-contain" />
+            <div id="imageHistory" class="absolute bottom-0 left-0 right-0 bg-black/50 p-2 hidden group-hover:block transition-all duration-300">
+              <div class="flex space-x-2 overflow-x-auto pb-2">
+                ${state.imageHistory.slice().reverse().map((url: string) => `
+                  <img 
+                    src="${url}" 
+                    alt="History image" 
+                    class="h-16 w-16 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity"
+                    onclick="document.getElementById('generatedImage').querySelector('img').src = '${url}'"
+                  />
+                `).join('')}
+              </div>
+            </div>
+          </div>
         `;
       } else {
         generatedImage.innerHTML = '<p class="text-gray-500">Generated image will appear here</p>';

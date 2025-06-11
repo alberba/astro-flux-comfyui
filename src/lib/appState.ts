@@ -4,6 +4,10 @@ type AppState = {
   generatedImageUrl: string | null;
   progress: { value: number; max: number } | null;
   intermediateImages: string[];
+  imageHistory: string[];
+  isGeneratingMultiple: boolean;
+  currentGeneration: number;
+  totalGenerations: number;
 };
 
 class AppStateManager {
@@ -13,6 +17,10 @@ class AppStateManager {
     generatedImageUrl: null,
     progress: null,
     intermediateImages: [],
+    imageHistory: [],
+    isGeneratingMultiple: false,
+    currentGeneration: 0,
+    totalGenerations: 0,
   };
 
   private listeners: ((state: AppState) => void)[] = [];
@@ -51,7 +59,11 @@ class AppStateManager {
   }
 
   public setGeneratedImage(url: string) {
-    this.setState({ generatedImageUrl: url, isLoading: false });
+    this.setState({
+      generatedImageUrl: url,
+      isLoading: false,
+      imageHistory: [...this.state.imageHistory, url].slice(-10), // Keep last 10 images
+    });
   }
 
   public clearGeneratedImage() {
@@ -70,6 +82,28 @@ class AppStateManager {
 
   public clearProgress() {
     this.setState({ progress: null });
+  }
+
+  public startMultipleGeneration(total: number) {
+    this.setState({
+      isGeneratingMultiple: true,
+      currentGeneration: 0,
+      totalGenerations: total,
+    });
+  }
+
+  public updateGenerationProgress(current: number) {
+    this.setState({
+      currentGeneration: current,
+    });
+  }
+
+  public finishMultipleGeneration() {
+    this.setState({
+      isGeneratingMultiple: false,
+      currentGeneration: 0,
+      totalGenerations: 0,
+    });
   }
 }
 
