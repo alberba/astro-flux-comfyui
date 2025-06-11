@@ -17,16 +17,16 @@ const { title } = Astro.props;
   </head>
   <body class="min-h-screen bg-gray-100">
     <main class="w-full mx-auto p-0">
-      <header class="grid grid-cols-3 items-center w-full px-8 pt-4 pb-4">
-        <h1 class="text-3xl font-bold text-left">{title}</h1>
-        <nav>
-          <div class="flex space-x-4 justify-center overflow-x-auto no-scrollbar whitespace-nowrap">
+      <header class="grid grid-cols-12 items-center w-full px-8 pt-4 pb-4">
+        <h1 class="text-2xl font-bold text-left col-span-3">{title}</h1>
+        <nav class="col-span-6 flex justify-center">
+          <div class="flex justify-center whitespace-nowrap">
             <a href="/" class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap" style="{Astro.url.pathname === '/' ? 'background: white; border-bottom: 2px solid #3b82f6;' : ''}">Generación de imágenes</a>
             <a href="/inpaint-loras" class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap" style="{Astro.url.pathname === '/inpaint-loras' ? 'background: white; border-bottom: 2px solid #3b82f6;' : ''}">Inpaint con Loras</a>
             <a href="/inpaint" class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap" style="{Astro.url.pathname === '/inpaint' ? 'background: white; border-bottom: 2px solid #3b82f6;' : ''}">Otro Inpaint</a>
           </div>
         </nav>
-        <div class="flex justify-end">
+        <div class="col-span-3 flex justify-end">
           <img src="/UIB.png" alt="UIB Logo" class="h-12" />
         </div>
       </header>
