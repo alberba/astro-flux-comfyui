@@ -36,9 +36,6 @@ export class ImageGenerator {
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === "intermediate_image" && this.onIntermediateImage) {
-          this.onIntermediateImage(data.imageUrl);
-        }
         if (data.type === "progress" && data.data) {
           appState.setProgress({ value: data.data.value, max: data.data.max });
         }
@@ -58,7 +55,7 @@ export class ImageGenerator {
 
   async generateImage(params: {
     prompt: string;
-    mask: string;
+    mask?: string;
   }): Promise<string> {
     try {
       // Conectar WebSocket si no está conectado

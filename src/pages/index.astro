@@ -1,12 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import DropZone from '../components/DropZone.astro';
-import UploadButton from '../components/UploadButton.astro';
 ---
 
 <Layout title="ComfyUI Image Generator">
   <div class="max-w-3xl mx-auto">
-    <!-- Título y tabs ahora están en el layout -->
     <!-- Generated Image Display -->
     <div class="bg-white p-4 rounded-lg shadow-md mb-4">
       <div id="generatedImage" class="w-full h-[560px] border rounded bg-gray-50 flex items-center justify-center relative">
@@ -63,53 +60,15 @@ import UploadButton from '../components/UploadButton.astro';
 </Layout>
 
 <script>
-  import { MaskCanvas } from '../lib/canvas';
   import { ImageGenerator } from '../lib/imageGenerator';
   import { appState } from '../lib/appState';
 
-  // Inicializar componentes
-  const canvas = new MaskCanvas('dropZone-canvas');
   const imageGenerator = new ImageGenerator();
 
   // Configurar callback para imágenes intermedias
   imageGenerator.setIntermediateImageCallback((imageUrl) => {
     appState.addIntermediateImage(imageUrl);
   });
-
-  // Event Listeners
-  interface ImageLoadedEvent extends CustomEvent {
-    detail: string;
-  }
-
-  window.addEventListener('image-loaded', ((e: ImageLoadedEvent) => {
-    const imageUrl = e.detail;
-    canvas.loadImage(imageUrl);
-    document.getElementById('clearMask')?.classList.remove('hidden');
-    document.getElementById('maskColorSelector')?.classList.remove('hidden');
-  }) as EventListener);
-
-  document.getElementById('clearMask')?.addEventListener('click', () => {
-    canvas.clearMask();
-  });
-
-  // Color selector buttons
-  const blackMask = document.getElementById('blackMask');
-  const whiteMask = document.getElementById('whiteMask');
-
-  blackMask?.addEventListener('click', () => {
-    canvas.setMaskColor('black');
-    blackMask.classList.add('ring-2', 'ring-indigo-500');
-    whiteMask?.classList.remove('ring-2', 'ring-indigo-500');
-  });
-
-  whiteMask?.addEventListener('click', () => {
-    canvas.setMaskColor('white');
-    whiteMask.classList.add('ring-2', 'ring-indigo-500');
-    blackMask?.classList.remove('ring-2', 'ring-indigo-500');
-  });
-
-  // Set initial color
-  blackMask?.classList.add('ring-2', 'ring-indigo-500');
 
   document.getElementById('generate')?.addEventListener('click', async () => {
     const prompt = (document.getElementById('prompt') as HTMLTextAreaElement).value;
@@ -121,10 +80,8 @@ import UploadButton from '../components/UploadButton.astro';
 
     try {
       appState.startLoading();
-      const maskData = canvas.getMaskData();
       const imageUrl = await imageGenerator.generateImage({
         prompt,
-        mask: maskData
       });
       
       appState.setGeneratedImage(imageUrl);
@@ -133,11 +90,6 @@ import UploadButton from '../components/UploadButton.astro';
       console.error('Error generating image:', error);
       alert('Failed to generate image. Por favor, intenta de nuevo.');
     }
-  });
-
-  // Manejar redimensionamiento
-  window.addEventListener('resize', () => {
-    canvas.resize();
   });
 
   // Suscribirse a cambios de estado
