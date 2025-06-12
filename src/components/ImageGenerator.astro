@@ -99,11 +99,13 @@
 <script>
   import { ImageGenerator } from '../lib/imageGenerator';
   import { appState } from '../lib/appState';
+import type { CustomErrorParams } from 'astro:schema';
 
   const imageGenerator = new ImageGenerator();
   let lastUsedSeed: number | null = null;
   let canvasSize: { width: number, height: number } | null = null;
   let file: File | null = null;
+  let generatedUrl: string | null
 
   // Configurar callback para imágenes intermedias
   imageGenerator.setIntermediateImageCallback((imageUrl) => {
@@ -123,6 +125,10 @@
     file = (event as CustomEvent).detail;
     console.log('File loaded:', file);
   });
+  dropZone?.addEventListener("updateGeneratedUrl", (e: Event) => {
+    console.log("cambiado")
+    generatedUrl = (e as CustomEvent).detail
+  })
 
   function construirCanvas(){
     const canvas = document.createElement('canvas') as HTMLCanvasElement;
@@ -139,11 +145,47 @@
       ctx.moveTo(line.startX, line.startY);
       ctx.lineTo(line.endX, line.endY);
       ctx.lineWidth = line.lineWidth;
-      ctx.strokeStyle = 'black';
+      ctx.strokeStyle = '#fff';
+      ctx!.lineCap = 'round';
+      ctx!.lineJoin = 'round';
       ctx.stroke();
     });
     ctx.closePath();
     return canvas;
+  }
+
+  function invertMask(mask: HTMLCanvasElement) {
+    const w = mask.width
+    const h = mask.height
+    const inv = document.createElement('canvas')
+    inv.width = w
+    inv.height = h
+    const ctx = inv.getContext('2d')
+
+    ctx!.fillStyle = "white"
+    ctx?.fillRect(0, 0, w, h)
+
+    ctx!.globalCompositeOperation = "destination-out"
+    ctx?.drawImage(mask, 0, 0)
+
+    ctx!.globalCompositeOperation = "source-over"
+    return inv
+
+  }
+
+  // Función de ayuda para convertir File/Blob a Data URL Base64
+  function fileOrBlobToDataURL(fileOrBlob: File | Blob) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // reader.result será algo como "data:image/png;base64,iVBORw0KGgoAAAANS…"
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(fileOrBlob);
+    });
   }
 
   document.getElementById('generate')?.addEventListener('click', async () => {
@@ -162,18 +204,29 @@
       // Hay que preparar la máscara y la imagen
       try{
         appState.startLoading();
-        const canvas = construirCanvas()
+        let canvas = construirCanvas()
+        canvas = invertMask(canvas as HTMLCanvasElement)
+        let aux
+        console.log(generatedUrl)
+        if (generatedUrl) {
+          aux = generatedUrl
+        } else{
+          aux = await fileOrBlobToDataURL(file!)
+        }
         canvas?.toBlob(async blob => {
           const formData = new FormData();
           formData.append('file', blob!, 'mask.png');
           const { imageUrl, seed } = await imageGenerator.generateImageWithMask({
             prompt,
             mask: blob!,
-            image: file!,
+            image: aux!,
             seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
             cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
             steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
           });
+          window.dispatchEvent(new CustomEvent("imagenAPI", {
+            detail: imageUrl, bubbles: true, composed: true
+          }))
           
           // Guardar la última seed usada
           lastUsedSeed = seed;

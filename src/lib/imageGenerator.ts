@@ -88,22 +88,41 @@ export class ImageGenerator {
     }
   }
 
+// Función de ayuda para convertir File/Blob a Data URL Base64
+  fileOrBlobToDataURL(fileOrBlob: File | Blob) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // reader.result será algo como "data:image/png;base64,iVBORw0KGgoAAAANS…"
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(fileOrBlob);
+    });
+  }
+
   async generateImageWithMask(params: {
     prompt: string;
     mask?: Blob;
-    image?: Blob;
+    image?: string;
     seed?: number;
     cfg?: number;
     steps?: number;
     number?: number;
   }): Promise<{ imageUrl: string; seed: number }> {
     try {
+      const [ maskDataURL ] = await Promise.all([
+        this.fileOrBlobToDataURL(params.mask!),
+      ]);
       // Conectar WebSocket si no está conectado
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         this.connectWebSocket();
       }
       appState.clearProgress();
-
+      console.log(params.image)
+      
       const response = await fetch(`${this.apiUrl}/api/generate-mask`, {
         method: "POST",
         headers: {
@@ -112,6 +131,7 @@ export class ImageGenerator {
         body: JSON.stringify({
           ...params,
           clientId: this.clientId,
+          mask: maskDataURL,
         }),
       });
 

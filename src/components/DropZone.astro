@@ -35,7 +35,7 @@ const { id } = Astro.props;
     </div>
     <canvas
       id="canvas"
-      class="hidden w-full h-full"
+      class="hidden w-full"
     ></canvas>
   </div>
   <div class="flex flex-col gap-2 my-2 items-center">
@@ -59,7 +59,7 @@ const { id } = Astro.props;
           type="range"
           id="brushSize"
           min="5"
-          max="50"
+          max="200"
           value="10"
           class="h-2 w-full bg-gray-200 rounded-lg appearance-none cursor-pointer"
         >
@@ -89,6 +89,7 @@ const { id } = Astro.props;
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d');
   const dropZone = document.getElementById('dropZone') as HTMLDivElement;
+  let generatedUrl:string | null;
 
   const container = document.getElementById("container") as HTMLElement;
   
@@ -105,6 +106,36 @@ const { id } = Astro.props;
   ['dragleave', 'drop'].forEach(eventName => {
     container.addEventListener(eventName, unhighlight, false);
   });
+
+  window.addEventListener("imagenAPI", async e => {
+    const imageUrl = (e as CustomEvent).detail;
+    console.log(imageUrl)
+    cargarImagenImage(imageUrl)
+    dropZone.dispatchEvent(new CustomEvent("updateGeneratedUrl", {detail: imageUrl, bubbles: true}))
+    maskLines.length = 0
+  })
+
+  const cargarImagenImage = (aux: string) => {
+    const img = new Image();
+    img.onload = () => {
+      console.log('Imagen cargada:', img.width, img.height);
+      // Calcular dimensiones para mantener la proporción
+      canvas.width = img.width
+      canvas.height = img.height
+      dropZone.dispatchEvent(new CustomEvent('canvas:resize', { detail: { width: canvas.width, height: canvas.height }, bubbles: true }));
+      console.log("Aspect Ratio canvas: ", canvas.width/canvas.height)
+      console.log("Aspect Ratio imagen: ", img.width/img.height)
+
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.classList.remove('hidden');
+      document.getElementById('content')?.classList.add('hidden');
+      document.getElementById('clearMask')?.classList.remove('hidden');
+      document.getElementById('maskSettings')?.classList.remove('hidden');
+      document.getElementById('maskSettings')?.classList.add('flex');
+    };
+    img.src = aux
+    generatedUrl = aux
+  }
 
   // Handle dropped files
   container.addEventListener('drop', handleDrop, false);
@@ -127,6 +158,8 @@ const { id } = Astro.props;
     const dt = e.dataTransfer;
     file = dt?.files?.[0];
     dropZone.dispatchEvent(new CustomEvent('file:loaded', { detail: file, bubbles: true }));
+    generatedUrl = null
+    dropZone.dispatchEvent(new CustomEvent("updateGeneratedUrl", {detail: generatedUrl, bubbles:true}))
     
     if (file) {
       cargarImagen(file);
@@ -139,27 +172,21 @@ const { id } = Astro.props;
       const img = new Image();
       img.onload = () => {
         console.log('Imagen cargada:', img.width, img.height);
-        const container = canvas.parentElement?.getBoundingClientRect();
-        canvas.width = container?.width || 0;
-        canvas.height = container?.height || 0;
-        dropZone.dispatchEvent(new CustomEvent('canvas:resize', { detail: { width: canvas.width, height: canvas.height }, bubbles: true }));
         // Calcular dimensiones para mantener la proporción
-        const scale = Math.min(
-          canvas.width / img.width,
-          canvas.height / img.height
-        );
-        console.log('Escala:', scale);
-        const x = (canvas.width - img.width * scale) / 2;
-        const y = (canvas.height - img.height * scale) / 2;
+        canvas.width = img.width
+        canvas.height = img.height
+        dropZone.dispatchEvent(new CustomEvent('canvas:resize', { detail: { width: canvas.width, height: canvas.height }, bubbles: true }));
+        console.log("Aspect Ratio canvas: ", canvas.width/canvas.height)
+        console.log("Aspect Ratio imagen: ", img.width/img.height)
 
-        ctx?.drawImage(img, x, y, img.width * scale, img.height * scale);
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.classList.remove('hidden');
         document.getElementById('content')?.classList.add('hidden');
         document.getElementById('clearMask')?.classList.remove('hidden');
         document.getElementById('maskSettings')?.classList.remove('hidden');
         document.getElementById('maskSettings')?.classList.add('flex');
       };
-      img.src = e.target?.result as string;
+      img.src = e.target!.result as string
     };
     reader.readAsDataURL(file);
   }
@@ -186,17 +213,30 @@ const { id } = Astro.props;
     function startDrawing(event: MouseEvent) {
       isDrawing = true;
       const rect = canvas.getBoundingClientRect();
-      lastX = event.offsetX;
-      lastY = event.offsetY;
+      const scaleX = canvas.width  / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      const xCss = event.clientX - rect.left;
+      const yCss = event.clientY - rect.top;
+      
+
+      lastX = xCss * scaleX;
+      lastY = yCss * scaleY;
     }
 
     function draw(event: MouseEvent) {
       if (!isDrawing) return;
       const rect = canvas.getBoundingClientRect();
-      const currentX = event.clientX - rect.left;
-      const currentY = event.clientY - rect.top;
+      const xCss = event.clientX - rect.left;
+      const yCss = event.clientY - rect.top;
 
-      
+      const scaleX = canvas.width  / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      const currentX = xCss * scaleX;
+      const currentY = yCss * scaleY;
+
+
       maskLines.push({ startX: lastX, startY: lastY, endX: currentX, endY: currentY, lineWidth: brushSize });
       const maskLinesEvent = new CustomEvent('masklines:update', { detail: maskLines, bubbles: true });
       dropZone.dispatchEvent(maskLinesEvent);
@@ -208,19 +248,11 @@ const { id } = Astro.props;
     }
 
     function redrawCanvas() {
-      const reader = new FileReader();
-      if (file) {
-        reader.onload = (e) => {
-          const img = new Image();
+      if (generatedUrl) {
+        const img = new Image();
           img.onload = () => {
-            const scale = Math.min(
-              canvas.width / img.width,
-              canvas.height / img.height
-            );
-            const x = (canvas.width - img.width * scale) / 2;
-            const y = (canvas.height - img.height * scale) / 2;
             ctx?.clearRect(0, 0, canvas.width, canvas.height);
-            ctx?.drawImage(img, x, y, img.width * scale, img.height * scale);
+            ctx?.drawImage(img, 0, 0, img.width, img.height);
             maskLines.forEach(line => {
               ctx?.beginPath();
               ctx?.moveTo(line.startX, line.startY);
@@ -228,13 +260,36 @@ const { id } = Astro.props;
               ctx!.lineWidth = line.lineWidth;
               ctx!.strokeStyle = color;
               ctx!.lineCap = 'round';
+              ctx!.lineJoin = 'round';
               ctx?.stroke();
             });
           };
-          img.src = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
+          img.src = generatedUrl;
+      } else {
+        const reader = new FileReader();
+        if (file) {
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              ctx?.clearRect(0, 0, canvas.width, canvas.height);
+              ctx?.drawImage(img, 0, 0, img.width, img.height);
+              maskLines.forEach(line => {
+                ctx?.beginPath();
+                ctx?.moveTo(line.startX, line.startY);
+                ctx?.lineTo(line.endX, line.endY);
+                ctx!.lineWidth = line.lineWidth;
+                ctx!.strokeStyle = color;
+                ctx!.lineCap = 'round';
+                ctx!.lineJoin = 'round';
+                ctx?.stroke();
+              });
+            };
+            img.src = e.target?.result as string;
+          };
+          reader.readAsDataURL(file);
+        }
       }
+      
     }
 
     function stopDrawing() {
