@@ -1,6 +1,6 @@
 <div class="max-w-3xl mx-auto">
   <!-- Generated Image Display -->
-  <div class="bg-white p-4 rounded-lg shadow-md mb-4">
+  <div class="bg-white p-4 rounded-lg shadow-md mb-4" id="test">
     <slot name="image-container">
       <div id="generatedImage" class="w-full aspect-[3/2] border rounded bg-gray-50 flex items-center justify-center relative group">
         <p class="text-gray-500">Generated image will appear here</p>
@@ -102,11 +102,49 @@
 
   const imageGenerator = new ImageGenerator();
   let lastUsedSeed: number | null = null;
+  let canvasSize: { width: number, height: number } | null = null;
+  let file: File | null = null;
 
   // Configurar callback para imágenes intermedias
   imageGenerator.setIntermediateImageCallback((imageUrl) => {
     appState.addIntermediateImage(imageUrl);
   });
+
+  let latestMaskLines: { startX: number, startY: number, endX: number, endY: number, lineWidth: number }[] = [];
+  const dropZone = document.getElementById('test') as HTMLDivElement;
+  dropZone?.addEventListener('masklines:update', (event: Event) => {
+    latestMaskLines = (event as CustomEvent).detail;
+  });
+  dropZone?.addEventListener('canvas:resize', (event: Event) => {
+    const { width, height } = (event as CustomEvent).detail;
+    canvasSize = { width, height };
+  });
+  dropZone?.addEventListener('file:loaded', (event: Event) => {
+    file = (event as CustomEvent).detail;
+    console.log('File loaded:', file);
+  });
+
+  function construirCanvas(){
+    const canvas = document.createElement('canvas') as HTMLCanvasElement;
+    canvas.width = canvasSize?.width || 0;
+    canvas.height = canvasSize?.height || 0;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('Could not get canvas context');
+      return;
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    latestMaskLines.forEach((line) => {
+      ctx.moveTo(line.startX, line.startY);
+      ctx.lineTo(line.endX, line.endY);
+      ctx.lineWidth = line.lineWidth;
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+    });
+    ctx.closePath();
+    return canvas;
+  }
 
   document.getElementById('generate')?.addEventListener('click', async () => {
     const prompt = (document.getElementById('prompt') as HTMLTextAreaElement).value;
@@ -118,26 +156,55 @@
       alert('Por favor, ingresa un prompt');
       return;
     }
-
-    try {
-      appState.startLoading();
-      const { imageUrl, seed } = await imageGenerator.generateImage({
-        prompt,
-        seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
-        cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
-        steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
-      });
-      
-      // Guardar la última seed usada
-      lastUsedSeed = seed;
-      
-      appState.setGeneratedImage(imageUrl);
-    } catch (error) {
-      appState.setError('Failed to generate image. Please try again.');
-      console.error('Error generating image:', error);
-      alert('Failed to generate image. Por favor, intenta de nuevo.');
+    
+    if(dropZone){
+      // Estamos generando Loras con máscara
+      // Hay que preparar la máscara y la imagen
+      try{
+        appState.startLoading();
+        const canvas = construirCanvas()
+        canvas?.toBlob(async blob => {
+          const formData = new FormData();
+          formData.append('file', blob!, 'mask.png');
+          const { imageUrl, seed } = await imageGenerator.generateImageWithMask({
+            prompt,
+            mask: blob!,
+            image: file!,
+            seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
+            cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
+            steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
+          });
+          
+          // Guardar la última seed usada
+          lastUsedSeed = seed;
+          appState.setGeneratedImage(imageUrl);
+        })
+      } catch (error) {
+        appState.setError('Failed to generate image. Please try again.');
+        console.error('Error generating image:', error);
+      }
+    } else {
+      try {
+        appState.startLoading();
+        const { imageUrl, seed } = await imageGenerator.generateImage({
+          prompt,
+          seed: seedInput.value ? (parseInt(seedInput.value) === -1 ? undefined : parseInt(seedInput.value)) : undefined,
+          cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
+          steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
+        });
+        
+        // Guardar la última seed usada
+        lastUsedSeed = seed;
+        
+        appState.setGeneratedImage(imageUrl);
+      } catch (error) {
+        appState.setError('Failed to generate image. Please try again.');
+        console.error('Error generating image:', error);
+        alert('Failed to generate image. Por favor, intenta de nuevo.');
+      }
     }
   });
+    
 
   // Botón para recuperar la última seed
   document.getElementById('last-seed')?.addEventListener('click', () => {

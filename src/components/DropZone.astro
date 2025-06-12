@@ -6,7 +6,7 @@ interface Props {
 const { id } = Astro.props;
 ---
 
-<div>
+<div id="dropZone">
   <div
     id="container"
     class="relative w-full aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors"
@@ -88,6 +88,7 @@ const { id } = Astro.props;
   const inputFile = document.getElementById('fileupload') as HTMLInputElement;
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d');
+  const dropZone = document.getElementById('dropZone') as HTMLDivElement;
 
   const container = document.getElementById("container") as HTMLElement;
   
@@ -125,6 +126,7 @@ const { id } = Astro.props;
   function handleDrop(e: DragEvent) {
     const dt = e.dataTransfer;
     file = dt?.files?.[0];
+    dropZone.dispatchEvent(new CustomEvent('file:loaded', { detail: file, bubbles: true }));
     
     if (file) {
       cargarImagen(file);
@@ -140,6 +142,7 @@ const { id } = Astro.props;
         const container = canvas.parentElement?.getBoundingClientRect();
         canvas.width = container?.width || 0;
         canvas.height = container?.height || 0;
+        dropZone.dispatchEvent(new CustomEvent('canvas:resize', { detail: { width: canvas.width, height: canvas.height }, bubbles: true }));
         // Calcular dimensiones para mantener la proporción
         const scale = Math.min(
           canvas.width / img.width,
@@ -171,6 +174,7 @@ const { id } = Astro.props;
 
     inputFile.addEventListener('change', (e) => {
       file = inputFile.files?.[0];
+      dropZone.dispatchEvent(new CustomEvent('file:loaded', { detail: file, bubbles: true }));  
       cargarImagen(file!)
     })
 
@@ -192,7 +196,10 @@ const { id } = Astro.props;
       const currentX = event.clientX - rect.left;
       const currentY = event.clientY - rect.top;
 
+      
       maskLines.push({ startX: lastX, startY: lastY, endX: currentX, endY: currentY, lineWidth: brushSize });
+      const maskLinesEvent = new CustomEvent('masklines:update', { detail: maskLines, bubbles: true });
+      dropZone.dispatchEvent(maskLinesEvent);
 
       redrawCanvas();
 

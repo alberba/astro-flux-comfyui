@@ -55,7 +55,7 @@ export class ImageGenerator {
 
   async generateImage(params: {
     prompt: string;
-    mask?: string;
+    mask?: Blob;
     seed?: number;
     cfg?: number;
     steps?: number;
@@ -69,6 +69,42 @@ export class ImageGenerator {
       appState.clearProgress();
 
       const response = await fetch(`${this.apiUrl}/api/generate-simple`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...params,
+          clientId: this.clientId,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate image");
+      const data = await response.json();
+      return { imageUrl: data.imageUrl, seed: data.seed };
+    } catch (error) {
+      console.error("Error generating image:", error);
+      throw error;
+    }
+  }
+
+  async generateImageWithMask(params: {
+    prompt: string;
+    mask?: Blob;
+    image?: Blob;
+    seed?: number;
+    cfg?: number;
+    steps?: number;
+    number?: number;
+  }): Promise<{ imageUrl: string; seed: number }> {
+    try {
+      // Conectar WebSocket si no está conectado
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        this.connectWebSocket();
+      }
+      appState.clearProgress();
+
+      const response = await fetch(`${this.apiUrl}/api/generate-mask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
