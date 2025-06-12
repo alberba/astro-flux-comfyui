@@ -1,80 +1,273 @@
 ---
 interface Props {
   id: string;
-  onDrop?: (file: File) => void;
 }
 
-const { id, onDrop } = Astro.props;
+const { id } = Astro.props;
 ---
 
-<div
-  id={id}
-  class="relative w-full h-96 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors"
->
-  <div id={`${id}-content`} class="text-center p-4">
-    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-    <p class="mt-2 text-sm text-gray-600">
-      Arrastra y suelta tu imagen aquí, o
-    </p>
-    <slot />
+<div>
+  <div
+    id="container"
+    class="relative w-full aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors"
+    >
+    <div id={`content`} class="text-center p-4">
+      <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <p class="mt-2 text-sm text-gray-600">
+        Arrastra y suelta tu imagen aquí, o
+      </p>
+      <button
+        type="button"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        onclick={`document.getElementById('fileupload').click()`}
+      >
+        Selecciona un archivo
+      </button>
+      <input
+        type="file"
+        id=fileupload
+        accept="image/*"
+        class="hidden"
+        multiple
+      />
+    </div>
+    <canvas
+      id="canvas"
+      class="hidden w-full h-full"
+    ></canvas>
   </div>
-  <canvas
-    id={`${id}-canvas`}
-    class="absolute inset-0 w-full h-full hidden"
-  ></canvas>
+  <div class="flex flex-col gap-2 my-2 items-center">
+    
+    <div class="items-center gap-2 hidden flex-row w-2/3" id="maskSettings">
+      <div class="flex gap-2">
+        <button
+          id="blackMask"
+          class="w-8 h-8 rounded-full bg-black border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          title="Máscara negra"
+        ></button>
+        <button
+          id="whiteMask"
+          class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          title="Máscara blanca"
+        ></button>
+      </div>
+      <div class="flex flex-col gap-2 w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-0.5">Grosor del pincel</label>
+        <input
+          type="range"
+          id="brushSize"
+          min="5"
+          max="50"
+          value="10"
+          class="h-2 w-full bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        >
+        <span id="brushSizeValue" class="block text-sm text-gray-600 mt-1">10</span>
+      </div>
+    </div>
+    <button
+      id="clearMask"
+      class="bg-red-500 text-white py-2 px-16 rounded hover:bg-red-600 hidden"
+    >
+      Limpiar Máscara
+    </button>
+  </div>
 </div>
 
+
+
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const dropZone = document.getElementById('dropZone');
-    const dropZoneContent = document.getElementById('dropZone-content');
-    const canvas = document.getElementById('dropZone-canvas');
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+  let color = 'black';
+  let brushSize = 10;
+  let file: File | undefined;
+  const maskLines: { startX: number, startY: number, endX: number, endY: number, lineWidth: number }[] = [];
+  const inputFile = document.getElementById('fileupload') as HTMLInputElement;
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d');
 
-    // Prevenir comportamientos por defecto
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropZone?.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    });
-
-    // Resaltar zona de drop
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone?.addEventListener(eventName, () => {
-        dropZone?.classList.add('border-indigo-500');
-      });
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone?.addEventListener(eventName, () => {
-        dropZone?.classList.remove('border-indigo-500');
-      });
-    });
-
-    // Manejar archivos soltados
-    dropZone?.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      if (dt) {
-        const files = dt.files;
-        if (files.length > 0) {
-          const file = files[0];
-          if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              const imageUrl = event.target?.result as string;
-              // Ocultar contenido y mostrar canvas
-              dropZoneContent?.classList.add('hidden');
-              canvas?.classList.remove('hidden');
-              // Disparar evento con la URL de la imagen
-              const customEvent = new CustomEvent('image-loaded', { detail: imageUrl });
-              window.dispatchEvent(customEvent);
-            };
-            reader.readAsDataURL(file);
-          }
-        }
-      }
-    });
+  const container = document.getElementById("container") as HTMLElement;
+  
+  // Prevent default drag behaviors
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    container.addEventListener(eventName, preventDefaults, false);
   });
-</script> 
+
+  // Highlight drop area when item is dragged over it
+  ['dragenter', 'dragover'].forEach(eventName => {
+    container.addEventListener(eventName, highlight, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    container.addEventListener(eventName, unhighlight, false);
+  });
+
+  // Handle dropped files
+  container.addEventListener('drop', handleDrop, false);
+
+  function preventDefaults(e: Event) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function highlight() {
+    container.classList.add('border-indigo-500', 'bg-indigo-50');
+  }
+
+  function unhighlight() {
+    container.classList.remove('border-indigo-500', 'bg-indigo-50');
+  }
+  
+  
+  function handleDrop(e: DragEvent) {
+    const dt = e.dataTransfer;
+    file = dt?.files?.[0];
+    
+    if (file) {
+      cargarImagen(file);
+    }
+  }
+
+  const cargarImagen = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        console.log('Imagen cargada:', img.width, img.height);
+        const container = canvas.parentElement?.getBoundingClientRect();
+        canvas.width = container?.width || 0;
+        canvas.height = container?.height || 0;
+        // Calcular dimensiones para mantener la proporción
+        const scale = Math.min(
+          canvas.width / img.width,
+          canvas.height / img.height
+        );
+        console.log('Escala:', scale);
+        const x = (canvas.width - img.width * scale) / 2;
+        const y = (canvas.height - img.height * scale) / 2;
+
+        ctx?.drawImage(img, x, y, img.width * scale, img.height * scale);
+        canvas.classList.remove('hidden');
+        document.getElementById('content')?.classList.add('hidden');
+        document.getElementById('clearMask')?.classList.remove('hidden');
+        document.getElementById('maskSettings')?.classList.remove('hidden');
+        document.getElementById('maskSettings')?.classList.add('flex');
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    if (!ctx) {
+      console.error('Could not get canvas context');
+      return;
+    }
+    
+
+    inputFile.addEventListener('change', (e) => {
+      file = inputFile.files?.[0];
+      cargarImagen(file!)
+    })
+
+    canvas.addEventListener("mousedown", startDrawing.bind(this));
+    canvas.addEventListener("mousemove", draw.bind(this));
+    canvas.addEventListener("mouseup", stopDrawing.bind(this));
+    canvas.addEventListener("mouseout", stopDrawing.bind(this));
+
+    function startDrawing(event: MouseEvent) {
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      lastX = event.offsetX;
+      lastY = event.offsetY;
+    }
+
+    function draw(event: MouseEvent) {
+      if (!isDrawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const currentX = event.clientX - rect.left;
+      const currentY = event.clientY - rect.top;
+
+      maskLines.push({ startX: lastX, startY: lastY, endX: currentX, endY: currentY, lineWidth: brushSize });
+
+      redrawCanvas();
+
+      lastX = currentX;
+      lastY = currentY;
+    }
+
+    function redrawCanvas() {
+      const reader = new FileReader();
+      if (file) {
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(
+              canvas.width / img.width,
+              canvas.height / img.height
+            );
+            const x = (canvas.width - img.width * scale) / 2;
+            const y = (canvas.height - img.height * scale) / 2;
+            ctx?.clearRect(0, 0, canvas.width, canvas.height);
+            ctx?.drawImage(img, x, y, img.width * scale, img.height * scale);
+            maskLines.forEach(line => {
+              ctx?.beginPath();
+              ctx?.moveTo(line.startX, line.startY);
+              ctx?.lineTo(line.endX, line.endY);
+              ctx!.lineWidth = line.lineWidth;
+              ctx!.strokeStyle = color;
+              ctx!.lineCap = 'round';
+              ctx?.stroke();
+            });
+          };
+          img.src = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    // Buscar el botón clearMask en inpaint-loras
+    const clearMaskButton = document.getElementById('clearMask');
+    clearMaskButton?.addEventListener('click', () => {
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      maskLines.length = 0;
+      redrawCanvas();
+    });
+
+    // Color selector buttons
+    const blackMask = document.getElementById('blackMask');
+    const whiteMask = document.getElementById('whiteMask');
+
+    blackMask?.addEventListener('click', () => {
+      blackMask.classList.add('ring-2', 'ring-indigo-500');
+      whiteMask?.classList.remove('ring-2', 'ring-indigo-500');
+      color = 'black';
+    });
+
+    whiteMask?.addEventListener('click', () => {
+      whiteMask.classList.add('ring-2', 'ring-indigo-500');
+      blackMask?.classList.remove('ring-2', 'ring-indigo-500');
+      color = 'white';
+    });
+
+    // Set initial color
+    blackMask?.classList.add('ring-2', 'ring-indigo-500');
+
+    // Brush size selector
+    const brushSizeInput = document.getElementById('brushSize') as HTMLInputElement;
+    const brushSizeValue = document.getElementById('brushSizeValue') as HTMLElement;
+    brushSizeInput.addEventListener('input', (e) => {
+      brushSize = parseInt(brushSizeInput.value);
+      brushSizeValue.textContent = brushSize.toString();
+      redrawCanvas();
+    });
+      
+  });
