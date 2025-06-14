@@ -1,7 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import DropZone from '../components/DropZone.astro';
-import ImageGenerator from '../components/ImageGenerator.astro';
+import Layout from "../layouts/Layout.astro";
+import DropZone from "../components/DropZone.astro";
+import ImageGenerator from "../components/ImageGenerator.astro";
 ---
 
 <Layout title="Inpaint con Loras">
@@ -11,8 +11,8 @@ import ImageGenerator from '../components/ImageGenerator.astro';
 </Layout>
 
 <script>
-  import { ImageGenerator } from '../lib/imageGenerator';
-  import { appState } from '../lib/appState';
+  import { ImageGenerator } from "../lib/imageGenerator";
+  import { appState } from "../lib/appState";
 
   // Inicializar componentes
   const imageGenerator = new ImageGenerator();

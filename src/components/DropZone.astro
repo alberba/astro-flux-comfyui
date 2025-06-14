@@ -9,11 +9,18 @@ const { id } = Astro.props;
 <div id="dropZone">
   <div
     id="container"
-    class="relative w-full aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors"
-    >
+    class="relative w-full aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors">
     <div id={`content`} class="text-center p-4">
-      <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      <svg
+        class="mx-auto h-12 w-12 text-gray-400"
+        stroke="currentColor"
+        fill="none"
+        viewBox="0 0 48 48">
+        <path
+          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
       </svg>
       <p class="mt-2 text-sm text-gray-600">
         Arrastra y suelta tu imagen aquí, o
@@ -21,40 +28,35 @@ const { id } = Astro.props;
       <button
         type="button"
         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        onclick={`document.getElementById('fileupload').click()`}
-      >
+        onclick={`document.getElementById('fileupload').click()`}>
         Selecciona un archivo
       </button>
       <input
         type="file"
-        id=fileupload
+        id="fileupload"
         accept="image/*"
         class="hidden"
         multiple
       />
     </div>
-    <canvas
-      id="canvas"
-      class="hidden w-full"
-    ></canvas>
+    <canvas id="canvas" class="hidden w-full"></canvas>
   </div>
   <div class="flex flex-col gap-2 my-2 items-center">
-    
     <div class="items-center gap-2 hidden flex-row w-2/3" id="maskSettings">
       <div class="flex gap-2">
         <button
           id="blackMask"
           class="w-8 h-8 rounded-full bg-black border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          title="Máscara negra"
-        ></button>
+          title="Máscara negra"></button>
         <button
           id="whiteMask"
           class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          title="Máscara blanca"
-        ></button>
+          title="Máscara blanca"></button>
       </div>
       <div class="flex flex-col gap-2 w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-0.5">Grosor del pincel</label>
+        <label class="block text-sm font-medium text-gray-700 mb-0.5"
+          >Grosor del pincel</label
+        >
         <input
           type="range"
           id="brushSize"
@@ -62,83 +64,95 @@ const { id } = Astro.props;
           max="200"
           value="10"
           class="h-2 w-full bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <span id="brushSizeValue" class="block text-sm text-gray-600 mt-1"
+          >10</span
         >
-        <span id="brushSizeValue" class="block text-sm text-gray-600 mt-1">10</span>
       </div>
     </div>
     <button
       id="clearMask"
-      class="bg-red-500 text-white py-2 px-16 rounded hover:bg-red-600 hidden"
-    >
+      class="bg-red-500 text-white py-2 px-16 rounded hover:bg-red-600 hidden">
       Limpiar Máscara
     </button>
   </div>
 </div>
 
-
-
 <script>
   let isDrawing = false;
   let lastX = 0;
   let lastY = 0;
-  let color = 'black';
+  let color = "black";
   let brushSize = 10;
   let file: File | undefined;
-  const maskLines: { startX: number, startY: number, endX: number, endY: number, lineWidth: number }[] = [];
-  const inputFile = document.getElementById('fileupload') as HTMLInputElement;
-  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-  const ctx = canvas.getContext('2d');
-  const dropZone = document.getElementById('dropZone') as HTMLDivElement;
-  let generatedUrl:string | null;
+  const maskLines: {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    lineWidth: number;
+  }[] = [];
+  const inputFile = document.getElementById("fileupload") as HTMLInputElement;
+  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  const ctx = canvas.getContext("2d");
+  const dropZone = document.getElementById("dropZone") as HTMLDivElement;
+  let generatedUrl: string | null;
 
   const container = document.getElementById("container") as HTMLElement;
-  
+
   // Prevent default drag behaviors
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
     container.addEventListener(eventName, preventDefaults, false);
   });
 
   // Highlight drop area when item is dragged over it
-  ['dragenter', 'dragover'].forEach(eventName => {
+  ["dragenter", "dragover"].forEach((eventName) => {
     container.addEventListener(eventName, highlight, false);
   });
 
-  ['dragleave', 'drop'].forEach(eventName => {
+  ["dragleave", "drop"].forEach((eventName) => {
     container.addEventListener(eventName, unhighlight, false);
   });
 
-  window.addEventListener("imagenAPI", async e => {
+  window.addEventListener("imagenAPI", async (e) => {
     const imageUrl = (e as CustomEvent).detail;
-    console.log(imageUrl)
-    cargarImagenImage(imageUrl)
-    dropZone.dispatchEvent(new CustomEvent("updateGeneratedUrl", {detail: imageUrl, bubbles: true}))
-    maskLines.length = 0
-  })
+    console.log(imageUrl);
+    cargarImagenImage(imageUrl);
+    dropZone.dispatchEvent(
+      new CustomEvent("updateGeneratedUrl", { detail: imageUrl, bubbles: true })
+    );
+    maskLines.length = 0;
+  });
 
   const cargarImagenImage = (aux: string) => {
     const img = new Image();
     img.onload = () => {
-      console.log('Imagen cargada:', img.width, img.height);
+      console.log("Imagen cargada:", img.width, img.height);
       // Calcular dimensiones para mantener la proporción
-      canvas.width = img.width
-      canvas.height = img.height
-      dropZone.dispatchEvent(new CustomEvent('canvas:resize', { detail: { width: canvas.width, height: canvas.height }, bubbles: true }));
-      console.log("Aspect Ratio canvas: ", canvas.width/canvas.height)
-      console.log("Aspect Ratio imagen: ", img.width/img.height)
+      canvas.width = img.width;
+      canvas.height = img.height;
+      dropZone.dispatchEvent(
+        new CustomEvent("canvas:resize", {
+          detail: { width: canvas.width, height: canvas.height },
+          bubbles: true,
+        })
+      );
+      console.log("Aspect Ratio canvas: ", canvas.width / canvas.height);
+      console.log("Aspect Ratio imagen: ", img.width / img.height);
 
       ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.classList.remove('hidden');
-      document.getElementById('content')?.classList.add('hidden');
-      document.getElementById('clearMask')?.classList.remove('hidden');
-      document.getElementById('maskSettings')?.classList.remove('hidden');
-      document.getElementById('maskSettings')?.classList.add('flex');
+      canvas.classList.remove("hidden");
+      document.getElementById("content")?.classList.add("hidden");
+      document.getElementById("clearMask")?.classList.remove("hidden");
+      document.getElementById("maskSettings")?.classList.remove("hidden");
+      document.getElementById("maskSettings")?.classList.add("flex");
     };
-    img.src = aux
-    generatedUrl = aux
-  }
+    img.src = aux;
+    generatedUrl = aux;
+  };
 
   // Handle dropped files
-  container.addEventListener('drop', handleDrop, false);
+  container.addEventListener("drop", handleDrop, false);
 
   function preventDefaults(e: Event) {
     e.preventDefault();
@@ -146,21 +160,27 @@ const { id } = Astro.props;
   }
 
   function highlight() {
-    container.classList.add('border-indigo-500', 'bg-indigo-50');
+    container.classList.add("border-indigo-500", "bg-indigo-50");
   }
 
   function unhighlight() {
-    container.classList.remove('border-indigo-500', 'bg-indigo-50');
+    container.classList.remove("border-indigo-500", "bg-indigo-50");
   }
-  
-  
+
   function handleDrop(e: DragEvent) {
     const dt = e.dataTransfer;
     file = dt?.files?.[0];
-    dropZone.dispatchEvent(new CustomEvent('file:loaded', { detail: file, bubbles: true }));
-    generatedUrl = null
-    dropZone.dispatchEvent(new CustomEvent("updateGeneratedUrl", {detail: generatedUrl, bubbles:true}))
-    
+    dropZone.dispatchEvent(
+      new CustomEvent("file:loaded", { detail: file, bubbles: true })
+    );
+    generatedUrl = null;
+    dropZone.dispatchEvent(
+      new CustomEvent("updateGeneratedUrl", {
+        detail: generatedUrl,
+        bubbles: true,
+      })
+    );
+
     if (file) {
       cargarImagen(file);
     }
@@ -171,39 +191,44 @@ const { id } = Astro.props;
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        console.log('Imagen cargada:', img.width, img.height);
+        console.log("Imagen cargada:", img.width, img.height);
         // Calcular dimensiones para mantener la proporción
-        canvas.width = img.width
-        canvas.height = img.height
-        dropZone.dispatchEvent(new CustomEvent('canvas:resize', { detail: { width: canvas.width, height: canvas.height }, bubbles: true }));
-        console.log("Aspect Ratio canvas: ", canvas.width/canvas.height)
-        console.log("Aspect Ratio imagen: ", img.width/img.height)
+        canvas.width = img.width;
+        canvas.height = img.height;
+        dropZone.dispatchEvent(
+          new CustomEvent("canvas:resize", {
+            detail: { width: canvas.width, height: canvas.height },
+            bubbles: true,
+          })
+        );
+        console.log("Aspect Ratio canvas: ", canvas.width / canvas.height);
+        console.log("Aspect Ratio imagen: ", img.width / img.height);
 
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.classList.remove('hidden');
-        document.getElementById('content')?.classList.add('hidden');
-        document.getElementById('clearMask')?.classList.remove('hidden');
-        document.getElementById('maskSettings')?.classList.remove('hidden');
-        document.getElementById('maskSettings')?.classList.add('flex');
+        canvas.classList.remove("hidden");
+        document.getElementById("content")?.classList.add("hidden");
+        document.getElementById("clearMask")?.classList.remove("hidden");
+        document.getElementById("maskSettings")?.classList.remove("hidden");
+        document.getElementById("maskSettings")?.classList.add("flex");
       };
-      img.src = e.target!.result as string
+      img.src = e.target!.result as string;
     };
     reader.readAsDataURL(file);
-  }
+  };
 
-  document.addEventListener('DOMContentLoaded', () => {
-    
+  document.addEventListener("DOMContentLoaded", () => {
     if (!ctx) {
-      console.error('Could not get canvas context');
+      console.error("Could not get canvas context");
       return;
     }
-    
 
-    inputFile.addEventListener('change', (e) => {
+    inputFile.addEventListener("change", (e) => {
       file = inputFile.files?.[0];
-      dropZone.dispatchEvent(new CustomEvent('file:loaded', { detail: file, bubbles: true }));  
-      cargarImagen(file!)
-    })
+      dropZone.dispatchEvent(
+        new CustomEvent("file:loaded", { detail: file, bubbles: true })
+      );
+      cargarImagen(file!);
+    });
 
     canvas.addEventListener("mousedown", startDrawing.bind(this));
     canvas.addEventListener("mousemove", draw.bind(this));
@@ -213,12 +238,11 @@ const { id } = Astro.props;
     function startDrawing(event: MouseEvent) {
       isDrawing = true;
       const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width  / rect.width;
+      const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
 
       const xCss = event.clientX - rect.left;
       const yCss = event.clientY - rect.top;
-      
 
       lastX = xCss * scaleX;
       lastY = yCss * scaleY;
@@ -230,15 +254,23 @@ const { id } = Astro.props;
       const xCss = event.clientX - rect.left;
       const yCss = event.clientY - rect.top;
 
-      const scaleX = canvas.width  / rect.width;
+      const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
 
       const currentX = xCss * scaleX;
       const currentY = yCss * scaleY;
 
-
-      maskLines.push({ startX: lastX, startY: lastY, endX: currentX, endY: currentY, lineWidth: brushSize });
-      const maskLinesEvent = new CustomEvent('masklines:update', { detail: maskLines, bubbles: true });
+      maskLines.push({
+        startX: lastX,
+        startY: lastY,
+        endX: currentX,
+        endY: currentY,
+        lineWidth: brushSize,
+      });
+      const maskLinesEvent = new CustomEvent("masklines:update", {
+        detail: maskLines,
+        bubbles: true,
+      });
       dropZone.dispatchEvent(maskLinesEvent);
 
       redrawCanvas();
@@ -250,21 +282,21 @@ const { id } = Astro.props;
     function redrawCanvas() {
       if (generatedUrl) {
         const img = new Image();
-          img.onload = () => {
-            ctx?.clearRect(0, 0, canvas.width, canvas.height);
-            ctx?.drawImage(img, 0, 0, img.width, img.height);
-            maskLines.forEach(line => {
-              ctx?.beginPath();
-              ctx?.moveTo(line.startX, line.startY);
-              ctx?.lineTo(line.endX, line.endY);
-              ctx!.lineWidth = line.lineWidth;
-              ctx!.strokeStyle = color;
-              ctx!.lineCap = 'round';
-              ctx!.lineJoin = 'round';
-              ctx?.stroke();
-            });
-          };
-          img.src = generatedUrl;
+        img.onload = () => {
+          ctx?.clearRect(0, 0, canvas.width, canvas.height);
+          ctx?.drawImage(img, 0, 0, img.width, img.height);
+          maskLines.forEach((line) => {
+            ctx?.beginPath();
+            ctx?.moveTo(line.startX, line.startY);
+            ctx?.lineTo(line.endX, line.endY);
+            ctx!.lineWidth = line.lineWidth;
+            ctx!.strokeStyle = color;
+            ctx!.lineCap = "round";
+            ctx!.lineJoin = "round";
+            ctx?.stroke();
+          });
+        };
+        img.src = generatedUrl;
       } else {
         const reader = new FileReader();
         if (file) {
@@ -273,14 +305,14 @@ const { id } = Astro.props;
             img.onload = () => {
               ctx?.clearRect(0, 0, canvas.width, canvas.height);
               ctx?.drawImage(img, 0, 0, img.width, img.height);
-              maskLines.forEach(line => {
+              maskLines.forEach((line) => {
                 ctx?.beginPath();
                 ctx?.moveTo(line.startX, line.startY);
                 ctx?.lineTo(line.endX, line.endY);
                 ctx!.lineWidth = line.lineWidth;
                 ctx!.strokeStyle = color;
-                ctx!.lineCap = 'round';
-                ctx!.lineJoin = 'round';
+                ctx!.lineCap = "round";
+                ctx!.lineJoin = "round";
                 ctx?.stroke();
               });
             };
@@ -289,7 +321,6 @@ const { id } = Astro.props;
           reader.readAsDataURL(file);
         }
       }
-      
     }
 
     function stopDrawing() {
@@ -297,39 +328,43 @@ const { id } = Astro.props;
     }
 
     // Buscar el botón clearMask en inpaint-loras
-    const clearMaskButton = document.getElementById('clearMask');
-    clearMaskButton?.addEventListener('click', () => {
+    const clearMaskButton = document.getElementById("clearMask");
+    clearMaskButton?.addEventListener("click", () => {
       ctx?.clearRect(0, 0, canvas.width, canvas.height);
       maskLines.length = 0;
       redrawCanvas();
     });
 
     // Color selector buttons
-    const blackMask = document.getElementById('blackMask');
-    const whiteMask = document.getElementById('whiteMask');
+    const blackMask = document.getElementById("blackMask");
+    const whiteMask = document.getElementById("whiteMask");
 
-    blackMask?.addEventListener('click', () => {
-      blackMask.classList.add('ring-2', 'ring-indigo-500');
-      whiteMask?.classList.remove('ring-2', 'ring-indigo-500');
-      color = 'black';
+    blackMask?.addEventListener("click", () => {
+      blackMask.classList.add("ring-2", "ring-indigo-500");
+      whiteMask?.classList.remove("ring-2", "ring-indigo-500");
+      color = "black";
     });
 
-    whiteMask?.addEventListener('click', () => {
-      whiteMask.classList.add('ring-2', 'ring-indigo-500');
-      blackMask?.classList.remove('ring-2', 'ring-indigo-500');
-      color = 'white';
+    whiteMask?.addEventListener("click", () => {
+      whiteMask.classList.add("ring-2", "ring-indigo-500");
+      blackMask?.classList.remove("ring-2", "ring-indigo-500");
+      color = "white";
     });
 
     // Set initial color
-    blackMask?.classList.add('ring-2', 'ring-indigo-500');
+    blackMask?.classList.add("ring-2", "ring-indigo-500");
 
     // Brush size selector
-    const brushSizeInput = document.getElementById('brushSize') as HTMLInputElement;
-    const brushSizeValue = document.getElementById('brushSizeValue') as HTMLElement;
-    brushSizeInput.addEventListener('input', (e) => {
+    const brushSizeInput = document.getElementById(
+      "brushSize"
+    ) as HTMLInputElement;
+    const brushSizeValue = document.getElementById(
+      "brushSizeValue"
+    ) as HTMLElement;
+    brushSizeInput.addEventListener("input", (e) => {
       brushSize = parseInt(brushSizeInput.value);
       brushSizeValue.textContent = brushSize.toString();
       redrawCanvas();
     });
-      
   });
+</script>
