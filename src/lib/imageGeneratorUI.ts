@@ -28,6 +28,8 @@ export function initializeImageGeneratorUI() {
   let file: File | null = null;
   let generatedUrl: string | null;
   let latestMaskLines: MaskLine[] = [];
+  let isAspectRatioLocked = false;
+  let initialAspectRatio: number | null = null;
 
   // Configurar callback para imágenes intermedias
   imageGenerator.setIntermediateImageCallback((imageUrl) => {
@@ -41,6 +43,9 @@ export function initializeImageGeneratorUI() {
   dropZone?.addEventListener("canvas:resize", (event: Event) => {
     const { width, height } = (event as CustomEvent).detail;
     canvasSize = { width, height };
+    widthInput.value = width.toString();
+    heightInput.value = height.toString();
+    initialAspectRatio = width / height;
   });
   dropZone?.addEventListener("file:loaded", (event: Event) => {
     file = (event as CustomEvent).detail;
@@ -49,6 +54,50 @@ export function initializeImageGeneratorUI() {
   dropZone?.addEventListener("updateGeneratedUrl", (e: Event) => {
     console.log("cambiado");
     generatedUrl = (e as CustomEvent).detail;
+  });
+
+  const widthInput = document.getElementById("width") as HTMLInputElement;
+  const heightInput = document.getElementById("height") as HTMLInputElement;
+  const toggleAspectRatioButton = document.getElementById(
+    "toggle-aspect-ratio"
+  ) as HTMLButtonElement;
+
+  toggleAspectRatioButton?.addEventListener("click", () => {
+    isAspectRatioLocked = !isAspectRatioLocked;
+    if (isAspectRatioLocked) {
+      if (widthInput.value && heightInput.value) {
+        initialAspectRatio =
+          parseInt(widthInput.value) / parseInt(heightInput.value);
+      }
+      toggleAspectRatioButton.classList.add("bg-indigo-500", "text-white");
+      toggleAspectRatioButton.classList.remove("bg-gray-100", "text-gray-700");
+    } else {
+      initialAspectRatio = null;
+      toggleAspectRatioButton.classList.remove("bg-indigo-500", "text-white");
+      toggleAspectRatioButton.classList.add("bg-gray-100", "text-gray-700");
+    }
+  });
+
+  widthInput?.addEventListener("input", () => {
+    if (isAspectRatioLocked && initialAspectRatio !== null) {
+      const newWidth = parseInt(widthInput.value);
+      if (!isNaN(newWidth) && newWidth > 0) {
+        heightInput.value = Math.round(
+          newWidth / initialAspectRatio
+        ).toString();
+      }
+    }
+  });
+
+  heightInput?.addEventListener("input", () => {
+    if (isAspectRatioLocked && initialAspectRatio !== null) {
+      const newHeight = parseInt(heightInput.value);
+      if (!isNaN(newHeight) && newHeight > 0) {
+        widthInput.value = Math.round(
+          newHeight * initialAspectRatio
+        ).toString();
+      }
+    }
   });
 
   function construirCanvas(): HTMLCanvasElement | undefined {
@@ -102,6 +151,10 @@ export function initializeImageGeneratorUI() {
       "steps-number"
     ) as HTMLInputElement;
     const exSizeInput = document.getElementById("ex-size") as HTMLInputElement;
+
+    // Get width and height values
+    const width = parseInt(widthInput.value) || 1024;
+    const height = parseInt(heightInput.value) || 1024;
 
     if (!prompt) {
       alert("Por favor, ingresa un prompt");
@@ -161,6 +214,8 @@ export function initializeImageGeneratorUI() {
                   steps: stepsInput.value
                     ? parseInt(stepsInput.value)
                     : undefined,
+                  width: width,
+                  height: height,
                 });
               window.dispatchEvent(
                 new CustomEvent("imagenAPI", {
@@ -196,6 +251,8 @@ export function initializeImageGeneratorUI() {
               : undefined,
             cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
             steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
+            width: width,
+            height: height,
           });
 
           // Guardar la última seed usada

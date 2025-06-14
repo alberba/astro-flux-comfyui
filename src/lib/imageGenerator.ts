@@ -59,6 +59,8 @@ export class ImageGenerator {
     seed?: number;
     cfg?: number;
     steps?: number;
+    width?: number;
+    height?: number;
     number?: number;
   }): Promise<{ imageUrl: string; seed: number }> {
     try {
@@ -74,7 +76,12 @@ export class ImageGenerator {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...params,
+          prompt: params.prompt,
+          seed: params.seed,
+          cfg: params.cfg,
+          steps: params.steps,
+          width: params.width,
+          height: params.height,
           clientId: this.clientId,
         }),
       });
@@ -88,14 +95,14 @@ export class ImageGenerator {
     }
   }
 
-// Función de ayuda para convertir File/Blob a Data URL Base64
+  // Función de ayuda para convertir File/Blob a Data URL Base64
   fileOrBlobToDataURL(fileOrBlob: File | Blob) {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         // reader.result será algo como "data:image/png;base64,iVBORw0KGgoAAAANS…"
         const dataUrl = reader.result as string;
-        const base64 = dataUrl.split(',')[1];
+        const base64 = dataUrl.split(",")[1];
         resolve(base64);
       };
       reader.onerror = reject;
@@ -110,10 +117,12 @@ export class ImageGenerator {
     seed?: number;
     cfg?: number;
     steps?: number;
+    width?: number;
+    height?: number;
     number?: number;
   }): Promise<{ imageUrl: string; seed: number }> {
     try {
-      const [ maskDataURL ] = await Promise.all([
+      const [maskDataURL] = await Promise.all([
         this.fileOrBlobToDataURL(params.mask!),
       ]);
       // Conectar WebSocket si no está conectado
@@ -121,17 +130,23 @@ export class ImageGenerator {
         this.connectWebSocket();
       }
       appState.clearProgress();
-      console.log(params.image)
-      
+      console.log(params.image);
+
       const response = await fetch(`${this.apiUrl}/api/generate-mask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...params,
-          clientId: this.clientId,
+          prompt: params.prompt,
           mask: maskDataURL,
+          image: params.image,
+          seed: params.seed,
+          cfg: params.cfg,
+          steps: params.steps,
+          width: params.width,
+          height: params.height,
+          clientId: this.clientId,
         }),
       });
 
