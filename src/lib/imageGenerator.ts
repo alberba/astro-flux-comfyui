@@ -127,6 +127,7 @@ export class ImageGenerator {
     width?: number;
     height?: number;
     number?: number;
+    lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {
       const [maskDataURL] = await Promise.all([
@@ -154,12 +155,13 @@ export class ImageGenerator {
           width: params.width,
           height: params.height,
           clientId: this.clientId,
+          lora: params.lora,
         }),
       });
 
       if (!response.ok) throw new Error("Failed to generate image");
       const data = await response.json();
-      return { image: data.imageUrl, seed: data.seed };
+      return { image: data.image, seed: data.seed };
     } catch (error) {
       console.error("Error generating image:", error);
       throw error;

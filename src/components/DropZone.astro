@@ -85,6 +85,7 @@ const { id } = Astro.props;
   let color = "black";
   let brushSize = 10;
   let file: File | undefined;
+  let generatedImage: string | null = null;
   const maskLines: {
     startX: number;
     startY: number;
@@ -118,31 +119,25 @@ const { id } = Astro.props;
     const imageData = (e as CustomEvent).detail;
     console.log(imageData);
     cargarImagenImage(imageData);
-    dropZone.dispatchEvent(
-      new CustomEvent("updateGeneratedUrl", {
-        detail: imageData,
-        bubbles: true,
-      })
-    );
     maskLines.length = 0;
   });
 
   const cargarImagenImage = (aux: string) => {
-    const imageOutput = document.getElementById(
-      "imageOutput"
-    ) as HTMLImageElement;
-    const generatedImageDiv = document.getElementById(
-      "generatedImage"
-    ) as HTMLDivElement;
-
-    if (imageOutput && generatedImageDiv) {
-      imageOutput.src = aux;
-      imageOutput.classList.remove("hidden");
-      generatedImageDiv.querySelector("p")?.classList.add("hidden");
-      canvas.classList.add("hidden"); // Hide canvas if image is directly displayed
-    }
-    generatedUrl = aux;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+      const ctx = canvas.getContext("2d");
+      if (canvas && ctx) {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      }
+    };
+    img.src = aux;
+    generatedImage = aux
   };
+
 
   // Handle dropped files
   container.addEventListener("drop", handleDrop, false);
@@ -173,6 +168,7 @@ const { id } = Astro.props;
         bubbles: true,
       })
     );
+    generatedImage = null;
 
     if (file) {
       cargarImagen(file);
@@ -273,7 +269,7 @@ const { id } = Astro.props;
     }
 
     function redrawCanvas() {
-      if (generatedUrl) {
+      if (generatedImage) {
         const img = new Image();
         img.onload = () => {
           ctx?.clearRect(0, 0, canvas.width, canvas.height);
@@ -289,7 +285,7 @@ const { id } = Astro.props;
             ctx?.stroke();
           });
         };
-        img.src = generatedUrl;
+        img.src = generatedImage;
       } else {
         const reader = new FileReader();
         if (file) {

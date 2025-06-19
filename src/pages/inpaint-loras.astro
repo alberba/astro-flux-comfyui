@@ -5,7 +5,7 @@ import ImageGenerator from "../components/ImageGenerator.astro";
 ---
 
 <Layout title="Inpaint con Loras">
-  <ImageGenerator>
+  <ImageGenerator showLoraSelect={true}>
     <DropZone slot="image-container" id="dropZone" />
   </ImageGenerator>
 </Layout>

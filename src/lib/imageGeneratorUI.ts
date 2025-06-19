@@ -151,6 +151,10 @@ export function initializeImageGeneratorUI() {
       "steps-number"
     ) as HTMLInputElement;
     const exSizeInput = document.getElementById("ex-size") as HTMLInputElement;
+    const lorasSelect = document.getElementById(
+      "loras-select"
+    ) as HTMLSelectElement | null;
+    const selectedLora = lorasSelect ? lorasSelect.value : undefined;
 
     // Get width and height values
     const width = parseInt(widthInput.value) || 1024;
@@ -186,7 +190,6 @@ export function initializeImageGeneratorUI() {
           }
           canvas = invertMask(canvas as HTMLCanvasElement);
           let aux;
-          console.log(generatedUrl);
           if (generatedUrl) {
             aux = generatedUrl;
           } else {
@@ -216,6 +219,7 @@ export function initializeImageGeneratorUI() {
                     : undefined,
                   width: width,
                   height: height,
+                  lora: selectedLora,
                 });
               window.dispatchEvent(
                 new CustomEvent("imagenAPI", {
