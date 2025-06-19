@@ -23,20 +23,17 @@ const { title } = Astro.props;
           <div class="flex justify-center whitespace-nowrap">
             <a
               href="/"
-              class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap"
-              style="{Astro.url.pathname === '/' ? 'background: white; border-bottom: 2px solid #3b82f6;' : ''}"
+              class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap {Astro.url.pathname === '/' ? 'active-tab' : ''}"
               >Generación de imágenes</a
             >
             <a
               href="/inpaint-loras"
-              class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap"
-              style="{Astro.url.pathname === '/inpaint-loras' ? 'background: white; border-bottom: 2px solid #3b82f6;' : ''}"
+              class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap {Astro.url.pathname === '/inpaint-loras' ? 'active-tab' : ''}"
               >Inpaint con Loras</a
             >
             <a
               href="/inpaint"
-              class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap"
-              style="{Astro.url.pathname === '/inpaint' ? 'background: white; border-bottom: 2px solid #3b82f6;' : ''}"
+              class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap {Astro.url.pathname === '/inpaint' ? 'active-tab' : ''}"
               >Otro Inpaint</a
             >
           </div>
@@ -49,4 +46,3 @@ const { title } = Astro.props;
     </main>
   </body>
 </html>
-

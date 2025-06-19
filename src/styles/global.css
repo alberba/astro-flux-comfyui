@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.active-tab {
+  background: white;
+  border-bottom: 2px solid #3b82f6;
+}
