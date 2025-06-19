@@ -13,7 +13,7 @@ export class ImageGenerator {
       window.location.hostname === "127.0.0.1";
     this.apiUrl = isLocal
       ? "http://localhost:8000"
-      : "http://ia-ltim.uib.es/lorasuib/api/";
+      : "http://ia-ltim.uib.es/lorasuib/api";
     this.wsUrl = isLocal
       ? "ws://localhost:8000/ws"
       : "ws://ia-ltim.uib.es/lorasuib/api/ws";
