@@ -8,8 +8,15 @@ export class ImageGenerator {
   private clientId: string;
 
   constructor() {
-    this.apiUrl = "http://localhost:8000";
-    this.wsUrl = "ws://localhost:8000/ws";
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    this.apiUrl = isLocal
+      ? "http://localhost:8000"
+      : "http://ia-ltim.uib.es/lorasuib/api/";
+    this.wsUrl = isLocal
+      ? "ws://localhost:8000/ws"
+      : "ws://ia-ltim.uib.es/lorasuib/api/ws";
     this.clientId = this.generateClientId();
   }
 
@@ -70,7 +77,7 @@ export class ImageGenerator {
       }
       appState.clearProgress();
 
-      const response = await fetch(`${this.apiUrl}/api/generate-simple`, {
+      const response = await fetch(`${this.apiUrl}/generate-simple`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -132,7 +139,7 @@ export class ImageGenerator {
       appState.clearProgress();
       console.log(params.image);
 
-      const response = await fetch(`${this.apiUrl}/api/generate-mask`, {
+      const response = await fetch(`${this.apiUrl}/generate-mask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
