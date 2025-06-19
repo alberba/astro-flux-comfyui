@@ -69,7 +69,7 @@ export class ImageGenerator {
     width?: number;
     height?: number;
     number?: number;
-  }): Promise<{ imageUrl: string; seed: number }> {
+  }): Promise<{ image: string; seed: number }> {
     try {
       // Conectar WebSocket si no está conectado
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -95,7 +95,7 @@ export class ImageGenerator {
 
       if (!response.ok) throw new Error("Failed to generate image");
       const data = await response.json();
-      return { imageUrl: data.imageUrl, seed: data.seed };
+      return { image: data.image, seed: data.seed };
     } catch (error) {
       console.error("Error generating image:", error);
       throw error;
@@ -127,7 +127,7 @@ export class ImageGenerator {
     width?: number;
     height?: number;
     number?: number;
-  }): Promise<{ imageUrl: string; seed: number }> {
+  }): Promise<{ image: string; seed: number }> {
     try {
       const [maskDataURL] = await Promise.all([
         this.fileOrBlobToDataURL(params.mask!),
@@ -159,7 +159,7 @@ export class ImageGenerator {
 
       if (!response.ok) throw new Error("Failed to generate image");
       const data = await response.json();
-      return { imageUrl: data.imageUrl, seed: data.seed };
+      return { image: data.imageUrl, seed: data.seed };
     } catch (error) {
       console.error("Error generating image:", error);
       throw error;

@@ -32,8 +32,8 @@ export function initializeImageGeneratorUI() {
   let initialAspectRatio: number | null = null;
 
   // Configurar callback para imágenes intermedias
-  imageGenerator.setIntermediateImageCallback((imageUrl) => {
-    appState.addIntermediateImage(imageUrl);
+  imageGenerator.setIntermediateImageCallback((imageData) => {
+    appState.addIntermediateImage(`data:image/png;base64,${imageData}`);
   });
 
   const dropZone = document.getElementById("test") as HTMLDivElement;
@@ -200,7 +200,7 @@ export function initializeImageGeneratorUI() {
               }
               const formData = new FormData();
               formData.append("file", blob!, "mask.png");
-              const { imageUrl, seed } =
+              const { image, seed } =
                 await imageGenerator.generateImageWithMask({
                   prompt,
                   mask: blob!,
@@ -219,7 +219,7 @@ export function initializeImageGeneratorUI() {
                 });
               window.dispatchEvent(
                 new CustomEvent("imagenAPI", {
-                  detail: imageUrl,
+                  detail: `data:image/png;base64,${image}`,
                   bubbles: true,
                   composed: true,
                 })
@@ -227,7 +227,7 @@ export function initializeImageGeneratorUI() {
 
               // Guardar la última seed usada
               lastUsedSeed = seed;
-              appState.setGeneratedImage(imageUrl);
+              appState.setGeneratedImage(`data:image/png;base64,${image}`);
               resolve();
             });
           });
@@ -242,7 +242,7 @@ export function initializeImageGeneratorUI() {
       } else {
         try {
           appState.startLoading();
-          const { imageUrl, seed } = await imageGenerator.generateImage({
+          const { image, seed } = await imageGenerator.generateImage({
             prompt,
             seed: seedInput.value
               ? parseInt(seedInput.value) === -1
@@ -254,10 +254,17 @@ export function initializeImageGeneratorUI() {
             width: width,
             height: height,
           });
+          window.dispatchEvent(
+            new CustomEvent("imagenAPI", {
+              detail: `data:image/png;base64,${image}`,
+              bubbles: true,
+              composed: true,
+            })
+          );
 
           // Guardar la última seed usada
           lastUsedSeed = seed;
-          appState.setGeneratedImage(imageUrl);
+          appState.setGeneratedImage(`data:image/png;base64,${image}`);
         } catch (error) {
           appState.setError("Failed to generate image. Please try again.");
           console.error("Error generating image:", error);

@@ -115,39 +115,32 @@ const { id } = Astro.props;
   });
 
   window.addEventListener("imagenAPI", async (e) => {
-    const imageUrl = (e as CustomEvent).detail;
-    console.log(imageUrl);
-    cargarImagenImage(imageUrl);
+    const imageData = (e as CustomEvent).detail;
+    console.log(imageData);
+    cargarImagenImage(imageData);
     dropZone.dispatchEvent(
-      new CustomEvent("updateGeneratedUrl", { detail: imageUrl, bubbles: true })
+      new CustomEvent("updateGeneratedUrl", {
+        detail: imageData,
+        bubbles: true,
+      })
     );
     maskLines.length = 0;
   });
 
   const cargarImagenImage = (aux: string) => {
-    const img = new Image();
-    img.onload = () => {
-      console.log("Imagen cargada:", img.width, img.height);
-      // Calcular dimensiones para mantener la proporción
-      canvas.width = img.width;
-      canvas.height = img.height;
-      dropZone.dispatchEvent(
-        new CustomEvent("canvas:resize", {
-          detail: { width: canvas.width, height: canvas.height },
-          bubbles: true,
-        })
-      );
-      console.log("Aspect Ratio canvas: ", canvas.width / canvas.height);
-      console.log("Aspect Ratio imagen: ", img.width / img.height);
+    const imageOutput = document.getElementById(
+      "imageOutput"
+    ) as HTMLImageElement;
+    const generatedImageDiv = document.getElementById(
+      "generatedImage"
+    ) as HTMLDivElement;
 
-      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.classList.remove("hidden");
-      document.getElementById("content")?.classList.add("hidden");
-      document.getElementById("clearMask")?.classList.remove("hidden");
-      document.getElementById("maskSettings")?.classList.remove("hidden");
-      document.getElementById("maskSettings")?.classList.add("flex");
-    };
-    img.src = aux;
+    if (imageOutput && generatedImageDiv) {
+      imageOutput.src = aux;
+      imageOutput.classList.remove("hidden");
+      generatedImageDiv.querySelector("p")?.classList.add("hidden");
+      canvas.classList.add("hidden"); // Hide canvas if image is directly displayed
+    }
     generatedUrl = aux;
   };
 
