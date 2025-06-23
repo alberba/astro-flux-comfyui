@@ -257,6 +257,7 @@ export function initializeImageGeneratorUI() {
             steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
             width: width,
             height: height,
+            lora: selectedLora,
           });
           window.dispatchEvent(
             new CustomEvent("imagenAPI", {

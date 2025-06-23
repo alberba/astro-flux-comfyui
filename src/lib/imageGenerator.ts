@@ -12,7 +12,7 @@ export class ImageGenerator {
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
     this.apiUrl = isLocal
-      ? "http://localhost:8000"
+      ? "http://localhost:8000/lorasuib/api"
       : "http://ia-ltim.uib.es/lorasuib/api";
     this.wsUrl = isLocal
       ? "ws://localhost:8000/ws"
@@ -69,6 +69,7 @@ export class ImageGenerator {
     width?: number;
     height?: number;
     number?: number;
+    lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {
       // Conectar WebSocket si no está conectado
@@ -90,6 +91,7 @@ export class ImageGenerator {
           width: params.width,
           height: params.height,
           clientId: this.clientId,
+          lora: params.lora,
         }),
       });
 
