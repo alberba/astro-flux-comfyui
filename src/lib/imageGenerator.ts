@@ -7,7 +7,7 @@ export class ImageGenerator {
   private onIntermediateImage: ((imageUrl: string) => void) | null = null;
   private clientId: string;
 
-  constructor() {
+  constructor(apiEndpointWorkflow?: string) {
     const isLocal =
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
@@ -119,18 +119,21 @@ export class ImageGenerator {
     });
   }
 
-  async generateImageWithMask(params: {
-    prompt: string;
-    mask?: Blob;
-    image?: string;
-    seed?: number;
-    cfg?: number;
-    steps?: number;
-    width?: number;
-    height?: number;
-    number?: number;
-    lora?: string;
-  }): Promise<{ image: string; seed: number }> {
+  async generateImageWithMask(
+    params: {
+      prompt: string;
+      mask?: Blob;
+      image?: string;
+      seed?: number;
+      cfg?: number;
+      steps?: number;
+      width?: number;
+      height?: number;
+      number?: number;
+      lora?: string;
+    },
+    apiEndpointWorkflow: string
+  ): Promise<{ image: string; seed: number }> {
     try {
       const [maskDataURL] = await Promise.all([
         this.fileOrBlobToDataURL(params.mask!),
@@ -141,8 +144,10 @@ export class ImageGenerator {
       }
       appState.clearProgress();
       console.log(params.image);
+      const apiUrl = this.apiUrl + apiEndpointWorkflow;
+      console.log("API URL:", apiUrl);
 
-      const response = await fetch(`${this.apiUrl}/generate-mask`, {
+      const response = await fetch(`${apiUrl}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

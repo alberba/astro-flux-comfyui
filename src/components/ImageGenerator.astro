@@ -1,3 +1,13 @@
+---
+import PropsContainer from "./props/PropsContainer.astro";
+
+const props = Astro.props;
+interface Props {
+  showLoraSelect?: boolean;
+  apiEndpointWorkflow: string;
+}
+---
+
 <div class="max-w-3xl mx-auto">
   <!-- Generated Image Display -->
   <div class="bg-white p-4 rounded-lg shadow-md mb-4" id="test">
@@ -23,203 +33,19 @@
       </div>
     </slot>
   </div>
-  <!-- Prompt y botón -->
-  <div class="bg-white p-4 rounded-lg shadow-md">
-    <div class="flex flex-row justify-between">
-      <h2 class="text-xl font-semibold mb-2">Generation Settings</h2>
-      <div class="flex items-center">
-        <span class="mr-2 text-sm font-medium text-gray-700">Basic</span>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" id="toggle-advanced" class="sr-only peer" />
-          <div
-            class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:bg-indigo-600 transition-all">
-          </div>
-          <div
-            class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow peer-checked:translate-x-5 transition-transform">
-          </div>
-        </label>
-        <span class="ml-2 text-sm font-medium text-gray-700">Advanced</span>
-      </div>
-    </div>
-
-    <div id="settings-basic-advanced" class="space-y-2">
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Prompt</label>
-        <textarea
-          id="prompt"
-          rows="1"
-          class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-          placeholder="Introduce el prompt"></textarea>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Resolution</label
-        >
-        <div class="flex space-x-2 items-center">
-          <label class="block text-sm font-medium text-gray-700">Width</label>
-          <input
-            type="number"
-            id="width"
-            data-resolution-input
-            class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-            value="1024"
-            min="1"
-            placeholder="Width"
-          />
-          <label class="block text-sm font-medium text-gray-700">Height</label>
-          <input
-            type="number"
-            id="height"
-            data-resolution-input
-            class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-            value="1024"
-            min="1"
-            placeholder="Height"
-          />
-          <button
-            id="toggle-aspect-ratio"
-            class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            title="Fix aspect ratio">
-            <svg
-              class="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-              <line x1="9" y1="21" x2="9" y2="3"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Loras</label>
-        <select
-          id="loras-select"
-          class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2">
-          <option value="">--Select a Lora--</option>
-        </select>
-      </div>
-      <div id="advanced-fields" style="display:none;">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Seed</label>
-          <div class="flex space-x-2">
-            <input
-              type="number"
-              id="seed"
-              class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-              placeholder="-1 para aleatorio"
-              min="-1"
-            />
-            <button
-              id="last-seed"
-              class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <svg
-                class="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M8.70714 3.29289C9.09766 3.68342 9.09766 4.31658 8.70714 4.70711L6.41424 7H14C17.866 7 21 10.134 21 14C21 17.866 17.866 21 14 21H8.15388C7.60159 21 7.15388 20.5523 7.15388 20C7.15388 19.4477 7.60159 19 8.15388 19H14C16.7615 19 19 16.7614 19 14C19 11.2386 16.7615 9 14 9H6.41424L8.70714 11.2929C9.09766 11.6834 9.09766 12.3166 8.70714 12.7071C8.31661 13.0976 7.68345 13.0976 7.29292 12.7071L2.58582 8L7.29292 3.29289C7.68345 2.90237 8.31661 2.90237 8.70714 3.29289Z"
-                  fill="#0F1729"></path>
-              </svg>
-            </button>
-            <button
-              id="random-seed"
-              class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <svg
-                class="h-5 w-5"
-                viewBox="0 0 16 16"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none">
-                <g fill="#000000">
-                  <path
-                    d="M5 4a1 1 0 000 2h.01a1 1 0 000-2H5zM7 8a1 1 0 011-1h.01a1 1 0 010 2H8a1 1 0 01-1-1zM11.01 10a1 1 0 100 2h.01a1 1 0 100-2h-.01z"
-                  ></path>
-                  <path
-                    fill-rule="evenodd"
-                    d="M3.25 1A2.25 2.25 0 001 3.25v9.5A2.25 2.25 0 003.25 15h9.5A2.25 2.25 0 0015 12.75v-9.5A2.25 2.25 0 0012.75 1h-9.5zM2.5 3.25a.75.75 0 01.75-.75h9.5a.75.75 0 01.75.75v9.5a.75.75 0 01-.75.75h-9.5a.75.75 0 01-.75-.75v-9.5z"
-                    clip-rule="evenodd"></path>
-                </g>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">CFG</label>
-          <div class="flex items-center space-x-2">
-            <input
-              type="range"
-              id="cfg-range"
-              min="0.1"
-              max="10"
-              value="1"
-              step="0.01"
-              class="flex-grow"
-            />
-            <input
-              type="number"
-              id="cfg-number"
-              min="0.1"
-              max="10"
-              value="1"
-              step="0.01"
-              class="w-14 text-right rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 text-sm"
-            />
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Steps</label>
-          <div class="flex items-center space-x-2">
-            <input
-              type="range"
-              id="steps-range"
-              min="1"
-              max="50"
-              value="25"
-              class="flex-grow"
-            />
-            <input
-              type="number"
-              id="steps-number"
-              min="1"
-              max="50"
-              value="25"
-              class="w-14 text-right rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1 text-sm"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="flex space-x-2">
-        <button
-          id="generate"
-          class="flex-grow bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700">
-          Generate Image
-        </button>
-        <div class="flex items-center space-x-2">
-          <input
-            type="number"
-            id="ex-size"
-            min="1"
-            max="10"
-            value="1"
-            class="w-16 rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 text-sm"
-            title="Number of sequential generations"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
+  <PropsContainer />
 </div>
 
 <script>
   import { initializeImageGeneratorUI } from "../lib/imageGeneratorUI";
+  const apiEndpointWorkflow =
+    window.location.pathname == "/lorasuib/inpaint-loras"
+      ? "/generation-mask"
+      : window.location.pathname == "/lorasuib/face-enhancer"
+        ? "/face-enhancer"
+        : "image-generator";
 
-  initializeImageGeneratorUI();
+  initializeImageGeneratorUI(apiEndpointWorkflow);
 
   document.addEventListener("DOMContentLoaded", async () => {
     const lorasSelect = document.getElementById(

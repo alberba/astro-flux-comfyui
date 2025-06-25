@@ -4,8 +4,8 @@ import DropZone from "../components/DropZone.astro";
 import ImageGenerator from "../components/ImageGenerator.astro";
 ---
 
-<Layout title="Inpaint con Loras">
-  <ImageGenerator showLoraSelect={true} apiEndpointWorkflow="/generate-mask">
+<Layout title="Face Enhancer">
+  <ImageGenerator showLoraSelect={true} apiEndpointWorkflow="/face-enhancer">
     <DropZone slot="image-container" id="dropZone" />
   </ImageGenerator>
 </Layout>

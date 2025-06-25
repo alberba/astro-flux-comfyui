@@ -1,0 +1,26 @@
+---
+const props = Astro.props;
+
+interface Props {
+  id: string;
+  placeholder: string;
+  title: string;
+  value: string;
+}
+---
+
+<label class="block text-sm font-medium text-gray-700" for={props.id}
+  >{props.title}</label
+>
+<div class="flex flex-row w-full gap-2">
+  <input
+    type="number"
+    id={props.id}
+    data-resolution-input
+    class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
+    value={props.value}
+    min="1"
+    placeholder={props.placeholder}
+  />
+  <slot />
+</div>

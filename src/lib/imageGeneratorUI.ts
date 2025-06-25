@@ -16,8 +16,9 @@ interface CanvasSize {
   height: number;
 }
 
-export function initializeImageGeneratorUI() {
+export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
   if (uiInitialized) {
+    console.warn("UI ya está inicializada, no se volverá a inicializar.");
     return; // Si ya se inicializó, salir
   }
   uiInitialized = true; // Marcar como inicializado
@@ -204,23 +205,28 @@ export function initializeImageGeneratorUI() {
               const formData = new FormData();
               formData.append("file", blob!, "mask.png");
               const { image, seed } =
-                await imageGenerator.generateImageWithMask({
-                  prompt,
-                  mask: blob!,
-                  image: aux!,
-                  seed: seedInput.value
-                    ? parseInt(seedInput.value) === -1
-                      ? undefined
-                      : parseInt(seedInput.value)
-                    : undefined,
-                  cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
-                  steps: stepsInput.value
-                    ? parseInt(stepsInput.value)
-                    : undefined,
-                  width: width,
-                  height: height,
-                  lora: selectedLora,
-                });
+                await imageGenerator.generateImageWithMask(
+                  {
+                    prompt,
+                    mask: blob!,
+                    image: aux!,
+                    seed: seedInput.value
+                      ? parseInt(seedInput.value) === -1
+                        ? undefined
+                        : parseInt(seedInput.value)
+                      : undefined,
+                    cfg: cfgInput.value
+                      ? parseFloat(cfgInput.value)
+                      : undefined,
+                    steps: stepsInput.value
+                      ? parseInt(stepsInput.value)
+                      : undefined,
+                    width: width,
+                    height: height,
+                    lora: selectedLora,
+                  },
+                  apiEndpointWorkflow!
+                );
               window.dispatchEvent(
                 new CustomEvent("imagenAPI", {
                   detail: `data:image/png;base64,${image}`,
@@ -404,6 +410,3 @@ export function initializeImageGeneratorUI() {
     }
   });
 }
-
-// Asegúrate de llamar a esta función cuando el DOM esté completamente cargado
-document.addEventListener("DOMContentLoaded", initializeImageGeneratorUI);
