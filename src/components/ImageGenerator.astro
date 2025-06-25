@@ -39,12 +39,13 @@ interface Props {
 <script>
   import { initializeImageGeneratorUI } from "../lib/imageGeneratorUI";
   const apiEndpointWorkflow =
-    window.location.pathname == "/lorasuib/inpaint-loras"
-      ? "/generation-mask"
-      : window.location.pathname == "/lorasuib/face-enhancer"
+    window.location.pathname == "/lorasuib/inpaint-loras/"
+      ? "/generate-mask"
+      : window.location.pathname == "/lorasuib/face-enhancer/"
         ? "/face-enhancer"
         : "image-generator";
 
+  console.log(window.location.pathname);
   initializeImageGeneratorUI(apiEndpointWorkflow);
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -69,7 +70,7 @@ interface Props {
 
       // Define the custom display names and filter out unwanted Lora
       const loraDisplayNames: { [key: string]: string } = {
-        "bibiloni1024.safetensors": "Antoni Bibiloni",
+        "Bibiloni1024.safetensors": "Antoni Bibiloni",
         "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
         "oliver1024.safetensors": "Antoni Oliver",
       };

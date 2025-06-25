@@ -104,26 +104,11 @@ export class ImageGenerator {
     }
   }
 
-  // Función de ayuda para convertir File/Blob a Data URL Base64
-  fileOrBlobToDataURL(fileOrBlob: File | Blob) {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        // reader.result será algo como "data:image/png;base64,iVBORw0KGgoAAAANS…"
-        const dataUrl = reader.result as string;
-        const base64 = dataUrl.split(",")[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(fileOrBlob);
-    });
-  }
-
   async generateImageWithMask(
     params: {
       prompt: string;
       mask?: Blob;
-      image?: string;
+      image?: Blob;
       seed?: number;
       cfg?: number;
       steps?: number;
@@ -135,9 +120,6 @@ export class ImageGenerator {
     apiEndpointWorkflow: string
   ): Promise<{ image: string; seed: number }> {
     try {
-      const [maskDataURL] = await Promise.all([
-        this.fileOrBlobToDataURL(params.mask!),
-      ]);
       // Conectar WebSocket si no está conectado
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         this.connectWebSocket();
@@ -147,23 +129,29 @@ export class ImageGenerator {
       const apiUrl = this.apiUrl + apiEndpointWorkflow;
       console.log("API URL:", apiUrl);
 
+      const formData = new FormData();
+      formData.append("clientId", this.clientId);
+
+      for (const key in params) {
+        if (Object.prototype.hasOwnProperty.call(params, key)) {
+          const value = params[key as keyof typeof params];
+          if (value !== undefined) {
+            if (key === "mask" && value instanceof Blob) {
+              formData.append("mask", value, "mask.png");
+            } else if (key === "image" && value instanceof Blob) {
+              formData.append("image", value, "image.png");
+            } else if (typeof value === "number") {
+              formData.append(key, value.toString());
+            } else if (typeof value === "string") {
+              formData.append(key, value);
+            }
+          }
+        }
+      }
+
       const response = await fetch(`${apiUrl}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: params.prompt,
-          mask: maskDataURL,
-          image: params.image,
-          seed: params.seed,
-          cfg: params.cfg,
-          steps: params.steps,
-          width: params.width,
-          height: params.height,
-          clientId: this.clientId,
-          lora: params.lora,
-        }),
+        body: formData,
       });
 
       if (!response.ok) throw new Error("Failed to generate image");

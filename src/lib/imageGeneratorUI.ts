@@ -101,46 +101,76 @@ export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
     }
   });
 
-  function construirCanvas(): HTMLCanvasElement | undefined {
-    const canvas = document.createElement("canvas") as HTMLCanvasElement;
-    canvas.width = canvasSize?.width || 0;
-    canvas.height = canvasSize?.height || 0;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      console.error("Could not get canvas context");
-      return;
-    }
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    latestMaskLines.forEach((line) => {
-      ctx.moveTo(line.startX, line.startY);
-      ctx.lineTo(line.endX, line.endY);
-      ctx.lineWidth = line.lineWidth;
-      ctx.strokeStyle = "#fff";
-      ctx!.lineCap = "round";
-      ctx!.lineJoin = "round";
-      ctx.stroke();
+  function construirCanvas(): Promise<Blob | undefined> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas") as HTMLCanvasElement;
+      canvas.width = canvasSize?.width || 0;
+      canvas.height = canvasSize?.height || 0;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.error("Could not get canvas context");
+        resolve(undefined);
+        return;
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      latestMaskLines.forEach((line) => {
+        ctx.moveTo(line.startX, line.startY);
+        ctx.lineTo(line.endX, line.endY);
+        ctx.lineWidth = line.lineWidth;
+        ctx.strokeStyle = "#fff";
+        ctx!.lineCap = "round";
+        ctx!.lineJoin = "round";
+        ctx.stroke();
+      });
+      ctx.closePath();
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          console.error("Failed to create mask blob.");
+          resolve(undefined);
+        }
+      }, "image/png"); // Specify the image format
     });
-    ctx.closePath();
-    return canvas;
   }
 
-  function invertMask(mask: HTMLCanvasElement): HTMLCanvasElement {
-    const w = mask.width;
-    const h = mask.height;
-    const inv = document.createElement("canvas");
-    inv.width = w;
-    inv.height = h;
-    const ctx = inv.getContext("2d");
+  function invertMask(maskBlob: Blob): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const w = img.width;
+        const h = img.height;
+        const inv = document.createElement("canvas");
+        inv.width = w;
+        inv.height = h;
+        const ctx = inv.getContext("2d");
 
-    ctx!.fillStyle = "white";
-    ctx?.fillRect(0, 0, w, h);
+        if (!ctx) {
+          reject(new Error("Could not get canvas context for inversion"));
+          return;
+        }
 
-    ctx!.globalCompositeOperation = "destination-out";
-    ctx?.drawImage(mask, 0, 0);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, w, h);
 
-    ctx!.globalCompositeOperation = "source-over";
-    return inv;
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.drawImage(img, 0, 0, w, h);
+
+        ctx.globalCompositeOperation = "source-over";
+        inv.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to create inverted mask blob."));
+          }
+        }, "image/png");
+      };
+      img.onerror = () =>
+        reject(new Error("Failed to load mask image for inversion."));
+      img.src = URL.createObjectURL(maskBlob);
+    });
   }
 
   document.getElementById("generate")?.addEventListener("click", async () => {
@@ -178,69 +208,53 @@ export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
         // Hay que preparar la máscara y la imagen
         try {
           appState.startLoading();
-          let canvas = construirCanvas();
-          // Asegurarse de que el canvas no esté vacío antes de invertir la máscara
-          if (
-            !canvas ||
-            (canvas.width === 0 && canvas.height === 0) ||
-            (latestMaskLines.length === 0 && !file)
-          ) {
-            // Si no hay líneas de máscara ni archivo, no se debería generar con máscara.
-            // Esto debería haber sido capturado por isMaskGeneration, pero es una doble comprobación.
-            throw new Error("No mask lines or image for mask generation.");
+          const maskBlob = await construirCanvas();
+          if (!maskBlob) {
+            throw new Error("Failed to create mask blob.");
           }
-          canvas = invertMask(canvas as HTMLCanvasElement);
-          let aux;
-          if (generatedUrl) {
-            aux = generatedUrl;
-          } else {
-            aux = await imageGenerator.fileOrBlobToDataURL(file!);
-          }
-          await new Promise<void>((resolve, reject) => {
-            canvas?.toBlob(async (blob) => {
-              if (!blob) {
-                reject(new Error("Failed to create mask blob."));
-                return;
-              }
-              const formData = new FormData();
-              formData.append("file", blob!, "mask.png");
-              const { image, seed } =
-                await imageGenerator.generateImageWithMask(
-                  {
-                    prompt,
-                    mask: blob!,
-                    image: aux!,
-                    seed: seedInput.value
-                      ? parseInt(seedInput.value) === -1
-                        ? undefined
-                        : parseInt(seedInput.value)
-                      : undefined,
-                    cfg: cfgInput.value
-                      ? parseFloat(cfgInput.value)
-                      : undefined,
-                    steps: stepsInput.value
-                      ? parseInt(stepsInput.value)
-                      : undefined,
-                    width: width,
-                    height: height,
-                    lora: selectedLora,
-                  },
-                  apiEndpointWorkflow!
-                );
-              window.dispatchEvent(
-                new CustomEvent("imagenAPI", {
-                  detail: `data:image/png;base64,${image}`,
-                  bubbles: true,
-                  composed: true,
-                })
-              );
+          const invertedMaskBlob = await invertMask(maskBlob);
 
-              // Guardar la última seed usada
-              lastUsedSeed = seed;
-              appState.setGeneratedImage(`data:image/png;base64,${image}`);
-              resolve();
-            });
-          });
+          let imageBlob: Blob | undefined;
+          if (file) {
+            imageBlob = file;
+          } else if (generatedUrl) {
+            // Convert Data URL to Blob if it's a generated image
+            const response = await fetch(generatedUrl);
+            imageBlob = await response.blob();
+          } else {
+            throw new Error("No image provided for mask generation.");
+          }
+
+          const { image, seed } = await imageGenerator.generateImageWithMask(
+            {
+              prompt,
+              mask: invertedMaskBlob,
+              image: imageBlob,
+              seed: seedInput.value
+                ? parseInt(seedInput.value) === -1
+                  ? undefined
+                  : parseInt(seedInput.value)
+                : undefined,
+              cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
+              steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
+              width: width,
+              height: height,
+              lora: selectedLora,
+            },
+            apiEndpointWorkflow!
+          );
+
+          window.dispatchEvent(
+            new CustomEvent("imagenAPI", {
+              detail: `data:image/png;base64,${image}`,
+              bubbles: true,
+              composed: true,
+            })
+          );
+
+          // Guardar la última seed usada
+          lastUsedSeed = seed;
+          appState.setGeneratedImage(`data:image/png;base64,${image}`);
         } catch (error) {
           appState.setError("Failed to generate image. Please try again.");
           console.error("Error generating image:", error);
