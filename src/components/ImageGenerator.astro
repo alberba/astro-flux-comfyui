@@ -37,13 +37,13 @@ interface Props {
 </div>
 
 <script>
-  import { initializeImageGeneratorUI } from "../lib/imageGeneratorUI";
+  import { initializeImageGeneratorUI } from "../lib/initializeUI";
   const apiEndpointWorkflow =
     window.location.pathname == "/lorasuib/inpaint-loras/"
       ? "/generate-mask"
       : window.location.pathname == "/lorasuib/face-enhancer/"
         ? "/face-enhancer"
-        : "image-generator";
+        : "/generate-simple";
 
   console.log(window.location.pathname);
   initializeImageGeneratorUI(apiEndpointWorkflow);

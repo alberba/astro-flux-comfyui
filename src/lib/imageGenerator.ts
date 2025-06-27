@@ -15,8 +15,10 @@ export class ImageGenerator {
       ? "http://localhost:8000/lorasuib/api"
       : "http://ia-ltim.uib.es/lorasuib/api";
     this.wsUrl = isLocal
-      ? "ws://localhost:8000/ws"
-      : "ws://ia-ltim.uib.es/lorasuib/api/ws";
+      ? "ws://localhost:8000/lorasuib/api/ws/"
+      : "ws://ia-ltim.uib.es/lorasuib/api/ws/";
+
+    this.apiUrl += apiEndpointWorkflow || "/generate-simple";
     this.clientId = this.generateClientId();
   }
 
@@ -78,7 +80,7 @@ export class ImageGenerator {
       }
       appState.clearProgress();
 
-      const response = await fetch(`${this.apiUrl}/generate-simple`, {
+      const response = await fetch(`${this.apiUrl}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,21 +106,18 @@ export class ImageGenerator {
     }
   }
 
-  async generateImageWithMask(
-    params: {
-      prompt: string;
-      mask?: Blob;
-      image?: Blob;
-      seed?: number;
-      cfg?: number;
-      steps?: number;
-      width?: number;
-      height?: number;
-      number?: number;
-      lora?: string;
-    },
-    apiEndpointWorkflow: string
-  ): Promise<{ image: string; seed: number }> {
+  async generateImageWithMask(params: {
+    prompt: string;
+    mask?: Blob;
+    image?: Blob;
+    seed?: number;
+    cfg?: number;
+    steps?: number;
+    width?: number;
+    height?: number;
+    number?: number;
+    lora?: string;
+  }): Promise<{ image: string; seed: number }> {
     try {
       // Conectar WebSocket si no está conectado
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -126,8 +125,7 @@ export class ImageGenerator {
       }
       appState.clearProgress();
       console.log(params.image);
-      const apiUrl = this.apiUrl + apiEndpointWorkflow;
-      console.log("API URL:", apiUrl);
+      console.log("API URL:", this.apiUrl);
 
       const formData = new FormData();
       formData.append("clientId", this.clientId);
@@ -149,7 +147,7 @@ export class ImageGenerator {
         }
       }
 
-      const response = await fetch(`${apiUrl}`, {
+      const response = await fetch(`${this.apiUrl}`, {
         method: "POST",
         body: formData,
       });

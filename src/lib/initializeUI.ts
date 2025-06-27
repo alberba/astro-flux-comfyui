@@ -13,12 +13,17 @@ export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
   uiInitialized = true; // Marcar como inicializado
 
   const imageGenerator = new ImageGenerator(apiEndpointWorkflow);
-  const canvasHandler = new CanvasHandler(
-    "canvas",
-    "dropZone",
-    "fileupload",
-    "container"
-  );
+  let canvasHandler: CanvasHandler | undefined;
+
+  if (apiEndpointWorkflow !== "/generate-simple") {
+    canvasHandler = new CanvasHandler(
+      "canvas",
+      "dropZone",
+      "fileupload",
+      "container"
+    );
+  }
+
   new UIEventHandler(imageGenerator, canvasHandler);
 
   // Configurar callback para imágenes intermedias
@@ -27,9 +32,11 @@ export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
   });
 
   // Event listener for imagenAPI to load generated image in canvas
-  window.addEventListener("imagenAPI", (e: Event) => {
-    const customEvent = e as CustomEvent;
-    const imageData = customEvent.detail;
-    canvasHandler.loadImageFromUrl(imageData);
-  });
+  if (canvasHandler) {
+    window.addEventListener("imagenAPI", (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const imageData = customEvent.detail;
+      canvasHandler!.loadImageFromUrl(imageData);
+    });
+  }
 }
