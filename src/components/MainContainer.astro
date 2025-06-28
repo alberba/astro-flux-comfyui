@@ -1,0 +1,21 @@
+---
+import ImageContainer from "./ImageContainer.astro";
+import PropsContainer from "./props/PropsContainer.astro";
+
+const props = Astro.props;
+interface Props {
+  showLoraSelect?: boolean;
+}
+---
+
+<div class="max-w-3xl mx-auto">
+  <ImageContainer>
+    <slot name="image-container">
+      <!-- Default content for image container -->
+      <div id="dropzone-container" class="w-full h-64 border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center">
+        <p class="text-gray-500">Drop your images here or click to upload</p>
+      </div>
+    </slot>
+  </ImageContainer>
+  <PropsContainer />
+</div>

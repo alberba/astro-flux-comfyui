@@ -1,24 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import DropZone from "../components/DropZone.astro";
-import ImageGenerator from "../components/ImageGenerator.astro";
+import MainContainer from "../components/MainContainer.astro";
 ---
 
 <Layout title="Inpaint con Loras">
-  <ImageGenerator showLoraSelect={true} apiEndpointWorkflow="/generate-mask">
-    <DropZone slot="image-container" id="dropZone" />
-  </ImageGenerator>
+  <MainContainer showLoraSelect={true}>
+    <div id="dropzone-container" slot="image-container">
+      <DropZone id="dropZone" />
+    </div>
+  </MainContainer>
 </Layout>
-
-<script>
-  import { ImageGenerator } from "../lib/imageGenerator";
-  import { appState } from "../lib/appState";
-
-  // Inicializar componentes
-  const imageGenerator = new ImageGenerator();
-
-  // Configurar callback para imágenes intermedias
-  imageGenerator.setIntermediateImageCallback((imageUrl) => {
-    appState.addIntermediateImage(imageUrl);
-  });
-</script>

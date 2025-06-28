@@ -166,3 +166,46 @@ import InputNumber from "./InputNumber.astro";
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const lorasSelect = document.getElementById(
+      "loras-select"
+    ) as HTMLSelectElement;
+
+    // Determinar la URL base de la API
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    const apiUrl = isLocal
+      ? "http://localhost:8000/lorasuib/api"
+      : "http://ia-ltim.uib.es/lorasuib/api";
+
+    try {
+      const response = await fetch(`${apiUrl}/get-loras`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      let loras = await response.json();
+
+      // Define the custom display names and filter out unwanted Lora
+      const loraDisplayNames: { [key: string]: string } = {
+        "Bibiloni1024.safetensors": "Antoni Bibiloni",
+        "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
+        "oliver1024.safetensors": "Antoni Oliver",
+      };
+      const loraToExclude = "aidmaImageUprader-FLUX-v0.3.safetensors";
+
+      loras = loras.filter((lora: string) => lora !== loraToExclude);
+
+      loras.forEach((lora: string) => {
+        const option = document.createElement("option");
+        option.value = lora;
+        option.textContent = loraDisplayNames[lora] || lora; // Use custom name if available, otherwise use original
+        lorasSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error fetching Loras:", error);
+    }
+  });
+</script>

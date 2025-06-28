@@ -1,0 +1,36 @@
+<div class="bg-white p-4 rounded-lg shadow-md mb-4" id="test">
+  <slot name="image-container">
+    <div
+      id="generatedImage"
+      class="w-full aspect-[3/2] border rounded bg-gray-50 flex items-center justify-center relative group">
+      <p class="text-gray-500">Generated image will appear here</p>
+      <img
+        id="imageOutput"
+        src=""
+        alt="Generated Image"
+        class="hidden w-full h-full object-contain absolute top-0 left-0"
+      />
+      <!-- Image History Slider -->
+    </div>
+    <div
+      id="imageHistory"
+      class="border rounded bg-gray-50 flex items-center p-2 mt-2 h-24">
+      <div class="flex space-x-2 overflow-x-auto h-full pb-2">
+        <!-- History images will be added here dynamically -->
+      </div>
+    </div>
+  </slot>
+</div>
+
+<script>
+  import { initializeImageGeneratorUI } from "../lib/initializeUI";
+  const apiEndpointWorkflow =
+    window.location.pathname == "/lorasuib/inpaint-loras/"
+      ? "/generate-mask"
+      : window.location.pathname == "/lorasuib/face-enhancer/"
+        ? "/face-enhancer"
+        : "/generate-simple";
+
+  console.log(window.location.pathname);
+  initializeImageGeneratorUI(apiEndpointWorkflow);
+</script>
