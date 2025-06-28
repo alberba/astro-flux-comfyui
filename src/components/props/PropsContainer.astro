@@ -168,42 +168,37 @@ import InputNumber from "./InputNumber.astro";
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    const lorasSelect = document.getElementById(
+  const LORA_DISPLAY_NAMES: Record<string, string> = {
+    "Bibiloni1024.safetensors": "Antoni Bibiloni",
+    "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
+    "oliver1024.safetensors": "Antoni Oliver",
+  };
+
+  const LORA_TO_EXCLUDE: string = "aidmaImageUprader-FLUX-v0.3.safetensors";
+
+  const setLoraSelect = (
+    lorasArray: string[]
+  ) => {
+    const loraSelect = document.getElementById(
       "loras-select"
     ) as HTMLSelectElement;
 
-    const apiUrl = getApiUrl();
+    lorasArray
+      .filter((l) => l !== LORA_TO_EXCLUDE)
+      .forEach((lora: string) => {
+        const option = document.createElement("option");
+        option.value = lora;
+        option.textContent = LORA_DISPLAY_NAMES[lora] ?? lora; // Use custom name if available, otherwise use original
+        loraSelect.appendChild(option);
+      });
+  };
 
+  document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const response = await fetchUrlResponse(`${apiUrl}/loras`);
-      let loras: string[] = await response.json();
-      setLoraSelect(loras, lorasSelect);
+      const response = await fetchUrlResponse(getApiUrl());      
+      setLoraSelect(await response.json());
     } catch (error) {
       console.error("Error fetching Loras:", error);
     }
   });
-
-  const setLoraSelect = (
-    lorasArray: string[],
-    loraSelect: HTMLSelectElement
-  ) => {
-    // Define the custom display names and filter out unwanted Lora
-    const loraDisplayNames: { [key: string]: string } = {
-      "Bibiloni1024.safetensors": "Antoni Bibiloni",
-      "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
-      "oliver1024.safetensors": "Antoni Oliver",
-    };
-
-    const loraToExclude = "aidmaImageUprader-FLUX-v0.3.safetensors";
-
-    lorasArray = lorasArray.filter((lora: string) => lora !== loraToExclude);
-
-    lorasArray.forEach((lora: string) => {
-      const option = document.createElement("option");
-      option.value = lora;
-      option.textContent = loraDisplayNames[lora] || lora; // Use custom name if available, otherwise use original
-      loraSelect.appendChild(option);
-    });
-  };
 </script>
