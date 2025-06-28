@@ -33,10 +33,6 @@ export class ImageGenerator {
     );
   }
 
-  setIntermediateImageCallback(callback: (imageUrl: string) => void) {
-    this.onIntermediateImage = callback;
-  }
-
   private connectWebSocket() {
     const wsUrl = new URL(this.wsUrl);
     wsUrl.searchParams.append("clientId", this.clientId);

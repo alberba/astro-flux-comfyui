@@ -16,9 +16,4 @@ import MainContainer from "../components/MainContainer.astro";
 
   // Inicializar componentes
   const imageGenerator = new ImageGenerator();
-
-  // Configurar callback para imágenes intermedias
-  imageGenerator.setIntermediateImageCallback((imageUrl) => {
-    appState.addIntermediateImage(imageUrl);
-  });
 </script>
