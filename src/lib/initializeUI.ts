@@ -26,11 +26,6 @@ export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
 
   new UIEventHandler(imageGenerator, canvasHandler);
 
-  // Configurar callback para imágenes intermedias
-  imageGenerator.setIntermediateImageCallback((imageData) => {
-    appState.addIntermediateImage(`data:image/png;base64,${imageData}`);
-  });
-
   // Event listener for imagenAPI to load generated image in canvas
   if (canvasHandler) {
     window.addEventListener("imagenAPI", (e: Event) => {
