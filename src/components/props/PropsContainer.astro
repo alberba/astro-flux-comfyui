@@ -10,10 +10,12 @@ import InputNumber from "./InputNumber.astro";
       <label class="relative inline-flex items-center cursor-pointer">
         <input type="checkbox" id="toggle-advanced" class="sr-only peer" />
         <div
-          class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:bg-indigo-600 transition-all">
+          class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:bg-indigo-600 transition-all"
+        >
         </div>
         <div
-          class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow peer-checked:translate-x-5 transition-transform">
+          class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow peer-checked:translate-x-5 transition-transform"
+        >
         </div>
       </label>
       <span class="ml-2 text-sm font-medium text-gray-700">Advanced</span>
@@ -46,13 +48,15 @@ import InputNumber from "./InputNumber.astro";
         />
         <button
           id="toggle-aspect-ratio"
-          class="mt-1 px-3 py-3 h-full bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          title="Fix aspect ratio">
+          class="mt-1 px-3 py-3 h-full bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+          title="Fix aspect ratio"
+        >
           <svg
             class="h-5 w-5"
             viewBox="0 0 24 24"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg">
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               fill-rule="evenodd"
               clip-rule="evenodd"
@@ -66,7 +70,8 @@ import InputNumber from "./InputNumber.astro";
       <label class="block text-sm font-medium text-gray-700">Loras</label>
       <select
         id="loras-select"
-        class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2">
+        class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
+      >
         <option value="">--Select a Lora--</option>
       </select>
     </div>
@@ -78,10 +83,12 @@ import InputNumber from "./InputNumber.astro";
               id="seed"
               placeholder="-1 para aleatorio"
               title="Seed"
-              value="">
+              value=""
+            >
               <button
                 id="last-seed"
-                class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
                 <img
                   src="/lorasuib/svg/undo.svg"
                   alt="Last Seed"
@@ -90,7 +97,8 @@ import InputNumber from "./InputNumber.astro";
               </button>
               <button
                 id="random-seed"
-                class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                class="mt-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
                 <img
                   src="/lorasuib/svg/random.svg"
                   alt="Random Seed"
@@ -149,7 +157,8 @@ import InputNumber from "./InputNumber.astro";
     <div class="flex space-x-2">
       <button
         id="generate"
-        class="flex-grow bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700">
+        class="flex-grow bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700"
+      >
         Generate Image
       </button>
       <div class="flex items-center space-x-2">
@@ -168,6 +177,8 @@ import InputNumber from "./InputNumber.astro";
 </div>
 
 <script>
+  import { fetchUrlResponse, getApiUrl } from "../../lib/utils.ts";
+
   const LORA_DISPLAY_NAMES: Record<string, string> = {
     "Bibiloni1024.safetensors": "Antoni Bibiloni",
     "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
@@ -176,9 +187,7 @@ import InputNumber from "./InputNumber.astro";
 
   const LORA_TO_EXCLUDE: string = "aidmaImageUprader-FLUX-v0.3.safetensors";
 
-  const setLoraSelect = (
-    lorasArray: string[]
-  ) => {
+  const setLoraSelect = (lorasArray: string[]) => {
     const loraSelect = document.getElementById(
       "loras-select"
     ) as HTMLSelectElement;
@@ -195,7 +204,7 @@ import InputNumber from "./InputNumber.astro";
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const response = await fetchUrlResponse(getApiUrl());      
+      const response = await fetchUrlResponse(getApiUrl());
       setLoraSelect(await response.json());
     } catch (error) {
       console.error("Error fetching Loras:", error);
