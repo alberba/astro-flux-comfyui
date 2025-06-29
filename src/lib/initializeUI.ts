@@ -5,7 +5,7 @@ import { UIEventHandler } from "./uiEventHandler";
 
 let uiInitialized = false; // Flag para asegurar que la UI se inicialice solo una vez
 
-export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
+export function initializeUI(apiEndpointWorkflow?: string): void {
   const imageGenerator = new ImageGenerator(apiEndpointWorkflow);
   let canvasHandler: CanvasHandler | undefined;
 

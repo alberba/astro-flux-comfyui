@@ -25,7 +25,7 @@
 </div>
 
 <script>
-  import { initializeImageGeneratorUI } from "../lib/initializeUI";
+  import { initializeUI } from "../lib/initializeUI";
   const apiEndpointWorkflow =
     window.location.pathname == "/lorasuib/inpaint-loras/"
       ? "/generate-mask"
@@ -34,5 +34,5 @@
         : "/generate-simple";
 
   console.log(window.location.pathname);
-  initializeImageGeneratorUI(apiEndpointWorkflow);
+  initializeUI(apiEndpointWorkflow);
 </script>
