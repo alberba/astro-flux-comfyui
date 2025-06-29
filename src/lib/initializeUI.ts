@@ -6,12 +6,6 @@ import { UIEventHandler } from "./uiEventHandler";
 let uiInitialized = false; // Flag para asegurar que la UI se inicialice solo una vez
 
 export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
-  if (uiInitialized) {
-    console.warn("UI ya está inicializada, no se volverá a inicializar.");
-    return; // Si ya se inicializó, salir
-  }
-  uiInitialized = true; // Marcar como inicializado
-
   const imageGenerator = new ImageGenerator(apiEndpointWorkflow);
   let canvasHandler: CanvasHandler | undefined;
 
@@ -22,16 +16,13 @@ export function initializeImageGeneratorUI(apiEndpointWorkflow?: string): void {
       "fileupload",
       "container"
     );
-  }
 
-  new UIEventHandler(imageGenerator, canvasHandler);
-
-  // Event listener for imagenAPI to load generated image in canvas
-  if (canvasHandler) {
     window.addEventListener("imagenAPI", (e: Event) => {
       const customEvent = e as CustomEvent;
       const imageData = customEvent.detail;
       canvasHandler!.loadImageFromUrl(imageData);
     });
   }
+
+  new UIEventHandler(imageGenerator, canvasHandler);
 }
