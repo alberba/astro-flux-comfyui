@@ -1,47 +1,56 @@
-# Astro Starter Kit: Minimal
+# ComfyUI-Web: Interfaz Web para ComfyUI
 
-```sh
-npm create astro@latest -- --template minimal
+Este proyecto proporciona una interfaz web para interactuar con ComfyUI, permitiendo a los usuarios generar y gestionar imágenes de manera más accesible.
+
+## 🚀 Estructura del Proyecto
+
+El proyecto está construido con Astro y organiza sus componentes, páginas y lógica de la aplicación de la siguiente manera:
+
+- `public/`: Contiene activos estáticos como imágenes y iconos.
+- `src/components/`: Componentes Astro reutilizables para la interfaz de usuario.
+- `src/layouts/`: Diseños de página para estructurar el contenido.
+- `src/lib/`: Lógica de la aplicación, utilidades y manejo de estado.
+- `src/pages/`: Páginas web de Astro, que definen las rutas de la aplicación.
+- `src/styles/`: Estilos globales y configuraciones de Tailwind CSS.
+
+## 🛠️ Configuración
+
+Para conectarse con la API de ComfyUI, el proyecto utiliza una API Intermedia (la API utilizada es esta: [FastAPI with ComfyUI](https://github.com/alberba/API) ) que traduce las opciones elegidas al usuario y las envía a ComfyUI. Esta API Intermedia se configura a través de variables de entorno que definen las URLs base para la API y el WebSocket.
+
+Crea los siguientes archivos en la raíz del proyecto:
+
+- `.env`: Para variables de entorno de producción.
+- `.env.development`: Para variables de entorno de desarrollo.
+
+Aquí tienes un ejemplo de cómo deberían lucir estos archivos:
+
+```bash
+# .env
+PUBLIC_API_URL_BASE= https://api.example.com
+PUBLIC_WS_URL_BASE= ws://example.com
+
+# .env.development
+PUBLIC_API_URL_BASE= http://localhost:0000/api
+PUBLIC_WS_URL_BASE= ws://localhost:0000/ws
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
+## ⚙️ Comandos
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Todos los comandos se ejecutan desde la raíz del proyecto en la terminal:
 
-## 🚀 Project Structure
+| Comando           | Acción                                                      |
+| :---------------- | :---------------------------------------------------------- |
+| `npm install`     | Instala las dependencias del proyecto.                      |
+| `npm run dev`     | Inicia el servidor de desarrollo local en `localhost:4321`. |
+| `npm run build`   | Compila el sitio para producción en `./dist/`.              |
+| `npm run preview` | Previsualiza la compilación localmente antes de desplegar.  |
 
-Inside of your Astro project, you'll see the following folders and files:
+## ✨ Características Principales
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+- **Interfaz Intuitiva:** Facilita la interacción con ComfyUI.
+- **Generación de Imágenes:** Permite generar imágenes directamente desde el navegador.
+- **Gestión de Modelos:** (Si aplica) Posibilidad de seleccionar y gestionar modelos.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 🤝 Contribución
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+¡Las contribuciones son bienvenidas! Si deseas contribuir, por favor, haz un fork del repositorio y envía un pull request.
