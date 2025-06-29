@@ -177,15 +177,12 @@ import InputNumber from "./InputNumber.astro";
 </div>
 
 <script>
-  import { fetchUrlResponse, getApiUrl } from "../../lib/utils.ts";
-
-  const LORA_DISPLAY_NAMES: Record<string, string> = {
-    "Bibiloni1024.safetensors": "Antoni Bibiloni",
-    "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
-    "oliver1024.safetensors": "Antoni Oliver",
-  };
-
-  const LORA_TO_EXCLUDE: string = "aidmaImageUprader-FLUX-v0.3.safetensors";
+  import {
+    fetchUrlResponse,
+    getApiUrl,
+    LORA_DISPLAY_NAMES,
+    LORA_TO_EXCLUDE,
+  } from "../../lib/utils.ts";
 
   const setLoraSelect = (lorasArray: string[]) => {
     const loraSelect = document.getElementById(

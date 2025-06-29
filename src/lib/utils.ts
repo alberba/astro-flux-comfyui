@@ -1,3 +1,12 @@
+export const LORA_DISPLAY_NAMES: Record<string, string> = {
+  "Bibiloni1024.safetensors": "Antoni Bibiloni",
+  "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
+  "oliver1024.safetensors": "Antoni Oliver",
+};
+
+export const LORA_TO_EXCLUDE: string =
+  "aidmaImageUprader-FLUX-v0.3.safetensors";
+
 // Determinar la URL base de la API
 function getApiUrl(): string {
   const isLocal =
@@ -18,9 +27,14 @@ async function fetchUrlResponse(url: string): Promise<Response> {
   return response;
 }
 
-export function syncRangeAndNumber(rangeInputId: string, numberInputId: string): void {
+export function syncRangeAndNumber(
+  rangeInputId: string,
+  numberInputId: string
+): void {
   const rangeInput = document.getElementById(rangeInputId) as HTMLInputElement;
-  const numberInput = document.getElementById(numberInputId) as HTMLInputElement;
+  const numberInput = document.getElementById(
+    numberInputId
+  ) as HTMLInputElement;
 
   rangeInput?.addEventListener("input", () => {
     numberInput.value = rangeInput.value;

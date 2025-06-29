@@ -4,19 +4,11 @@ export class ImageGenerator {
   private apiUrl: string;
   private wsUrl: string;
   private ws: WebSocket | null = null;
-  private onIntermediateImage: ((imageUrl: string) => void) | null = null;
   private clientId: string;
 
   constructor(apiEndpointWorkflow?: string) {
-    const isLocal =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1";
-    this.apiUrl = isLocal
-      ? "http://localhost:8000/lorasuib/api"
-      : "http://ia-ltim.uib.es/lorasuib/api";
-    this.wsUrl = isLocal
-      ? "ws://localhost:8000/lorasuib/api/ws/"
-      : "ws://ia-ltim.uib.es/lorasuib/api/ws/";
+    this.apiUrl = import.meta.env.PUBLIC_API_URL_BASE
+    this.wsUrl = import.meta.env.PUBLIC_WS_URL_BASE;
 
     this.apiUrl += apiEndpointWorkflow || "/generate-simple";
     this.clientId = this.generateClientId();
