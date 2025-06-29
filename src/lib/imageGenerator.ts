@@ -60,13 +60,11 @@ export class ImageGenerator {
 
   async generateImage(params: {
     prompt: string;
-    mask?: Blob;
-    seed?: number;
-    cfg?: number;
-    steps?: number;
-    width?: number;
-    height?: number;
-    number?: number;
+    seed: number;
+    cfg: number;
+    steps: number;
+    width: number;
+    height: number;
     lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {
@@ -104,14 +102,13 @@ export class ImageGenerator {
 
   async generateImageWithMask(params: {
     prompt: string;
-    mask?: Blob;
-    image?: Blob;
-    seed?: number;
-    cfg?: number;
-    steps?: number;
-    width?: number;
-    height?: number;
-    number?: number;
+    mask: Blob;
+    image: Blob;
+    seed: number;
+    cfg: number;
+    steps: number;
+    width: number;
+    height: number;
     lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {

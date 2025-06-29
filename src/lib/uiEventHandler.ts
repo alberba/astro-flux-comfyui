@@ -1,10 +1,22 @@
 import { ImageGenerator } from "./imageGenerator";
 import { appState } from "./appState";
 import { CanvasHandler } from "./canvasHandler";
+import { syncRangeAndNumber } from "./utils";
 
 interface CanvasSize {
   width: number;
   height: number;
+}
+
+interface UIValues {
+  prompt: string;
+  seed: number;
+  cfg: number;
+  steps: number;
+  exSize: number;
+  width: number;
+  height: number;
+  lora?: string;
 }
 
 export class UIEventHandler {
@@ -22,6 +34,22 @@ export class UIEventHandler {
   }
 
   private setupEventListeners() {
+    this.bindAspectRatioEvents();
+    this.bindDropZoneResize();
+    this.bindGenerateButton();
+
+    this.bindToggleAdvanced();
+    this.bindSeedControls();
+    this.bindCfgSync();
+    this.bindStepsSync();
+
+    this.bindMaskButtons();
+    this.bindFileUpload();
+
+    this.bindAppStateSubscription();
+  }
+
+  private bindAspectRatioEvents() {
     // Event listeners para la relación de aspecto
     const widthInput = document.getElementById("width") as HTMLInputElement;
     const heightInput = document.getElementById("height") as HTMLInputElement;
@@ -30,185 +58,43 @@ export class UIEventHandler {
     ) as HTMLButtonElement;
 
     toggleAspectRatioButton?.addEventListener("click", () => {
-      this.isAspectRatioLocked = !this.isAspectRatioLocked;
-      if (this.isAspectRatioLocked) {
-        if (widthInput.value && heightInput.value) {
-          this.initialAspectRatio =
-            parseInt(widthInput.value) / parseInt(heightInput.value);
-        }
-        toggleAspectRatioButton.classList.add("bg-indigo-500", "text-white");
-        toggleAspectRatioButton.classList.remove(
-          "bg-gray-100",
-          "text-gray-700"
-        );
-      } else {
-        this.initialAspectRatio = null;
-        toggleAspectRatioButton.classList.remove("bg-indigo-500", "text-white");
-        toggleAspectRatioButton.classList.add("bg-gray-100", "text-gray-700");
-      }
+      this.onToggleAspectRatio(
+        widthInput,
+        heightInput,
+        toggleAspectRatioButton
+      );
     });
 
-    widthInput?.addEventListener("input", () => {
-      if (this.isAspectRatioLocked && this.initialAspectRatio !== null) {
-        const newWidth = parseInt(widthInput.value);
-        if (!isNaN(newWidth) && newWidth > 0) {
-          heightInput.value = Math.round(
-            newWidth / this.initialAspectRatio
-          ).toString();
-        }
-      }
-    });
+    this.bindDimensionSync(widthInput, heightInput, (w) =>
+      Math.round(w / this.initialAspectRatio!)
+    );
+    this.bindDimensionSync(heightInput, widthInput, (h) =>
+      Math.round(h * this.initialAspectRatio!)
+    );
+  }
 
-    heightInput?.addEventListener("input", () => {
-      if (this.isAspectRatioLocked && this.initialAspectRatio !== null) {
-        const newHeight = parseInt(heightInput.value);
-        if (!isNaN(newHeight) && newHeight > 0) {
-          widthInput.value = Math.round(
-            newHeight * this.initialAspectRatio
-          ).toString();
-        }
-      }
-    });
-
+  private bindDropZoneResize() {
+    const widthInput = document.getElementById("width") as HTMLInputElement;
+    const heightInput = document.getElementById("height") as HTMLInputElement;
     const dropZone = document.getElementById("dropZone");
+
     dropZone?.addEventListener("canvas:resize", (event) => {
       const { width, height } = (event as CustomEvent).detail as CanvasSize;
       widthInput.value = width.toString();
       heightInput.value = height.toString();
     });
+  }
 
-    // Event listener para el botón de generar
-    document.getElementById("generate")?.addEventListener("click", async () => {
-      const prompt = (document.getElementById("prompt") as HTMLTextAreaElement)
-        .value;
-      const seedInput = document.getElementById("seed") as HTMLInputElement;
-      const cfgInput = document.getElementById(
-        "cfg-number"
-      ) as HTMLInputElement;
-      const stepsInput = document.getElementById(
-        "steps-number"
-      ) as HTMLInputElement;
-      const exSizeInput = document.getElementById(
-        "ex-size"
-      ) as HTMLInputElement;
-      const lorasSelect = document.getElementById(
-        "loras-select"
-      ) as HTMLSelectElement | null;
-      const selectedLora = lorasSelect ? lorasSelect.value : undefined;
-
-      const width = parseInt(widthInput.value) || 1024;
-      const height = parseInt(heightInput.value) || 1024;
-
-      if (!prompt) {
-        alert("Por favor, ingresa un prompt");
-        return;
-      }
-
-      const numberOfGenerations = parseInt(exSizeInput.value) || 1;
-      appState.startMultipleGeneration(numberOfGenerations);
-
-      const isMaskGeneration =
-        this.canvasHandler &&
-        (this.canvasHandler.getMaskLines().length > 0 ||
-          this.canvasHandler.getFile() !== undefined);
-
-      for (let i = 0; i < numberOfGenerations; i++) {
-        appState.updateGenerationProgress(i + 1);
-        if (isMaskGeneration) {
-          try {
-            appState.startLoading();
-            const maskBlob = await this.canvasHandler!.buildCanvasMask();
-            if (!maskBlob) {
-              throw new Error("Failed to create mask blob.");
-            }
-
-            let imageBlob: Blob | undefined;
-            if (this.canvasHandler!.getFile()) {
-              imageBlob = this.canvasHandler!.getFile();
-            } else if (this.canvasHandler!.getGeneratedUrl()) {
-              const response = await fetch(
-                this.canvasHandler!.getGeneratedUrl()!
-              ); // Add '!' for non-null assertion
-              imageBlob = await response.blob();
-            } else {
-              throw new Error("No image provided for mask generation.");
-            }
-
-            const { image, seed } =
-              await this.imageGenerator.generateImageWithMask({
-                prompt,
-                mask: maskBlob,
-                image: imageBlob,
-                seed: seedInput.value
-                  ? parseInt(seedInput.value) === -1
-                    ? undefined
-                    : parseInt(seedInput.value)
-                  : undefined,
-                cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
-                steps: stepsInput.value
-                  ? parseInt(stepsInput.value)
-                  : undefined,
-                width: width,
-                height: height,
-                lora: selectedLora,
-              });
-
-            window.dispatchEvent(
-              new CustomEvent("imagenAPI", {
-                detail: `data:image/png;base64,${image}`,
-                bubbles: true,
-                composed: true,
-              })
-            );
-
-            this.lastUsedSeed = seed;
-            appState.setGeneratedImage(`data:image/png;base64,${image}`);
-          } catch (error) {
-            appState.setError("Failed to generate image. Please try again.");
-            console.error("Error generating image:", error);
-          } finally {
-            if (i === numberOfGenerations - 1) {
-              appState.finishMultipleGeneration();
-            }
-          }
-        } else {
-          try {
-            appState.startLoading();
-            const { image, seed } = await this.imageGenerator.generateImage({
-              prompt,
-              seed: seedInput.value
-                ? parseInt(seedInput.value) === -1
-                  ? undefined
-                  : parseInt(seedInput.value)
-                : undefined,
-              cfg: cfgInput.value ? parseFloat(cfgInput.value) : undefined,
-              steps: stepsInput.value ? parseInt(stepsInput.value) : undefined,
-              width: width,
-              height: height,
-              lora: selectedLora,
-            });
-            window.dispatchEvent(
-              new CustomEvent("imagenAPI", {
-                detail: `data:image/png;base64,${image}`,
-                bubbles: true,
-                composed: true,
-              })
-            );
-
-            this.lastUsedSeed = seed;
-            appState.setGeneratedImage(`data:image/png;base64,${image}`);
-          } catch (error) {
-            appState.setError("Failed to generate image. Please try again.");
-            console.error("Error generating image:", error);
-          } finally {
-            if (i === numberOfGenerations - 1) {
-              appState.finishMultipleGeneration();
-            }
-          }
-        }
-      }
+  private bindGenerateButton() {
+    const generateButton = document.getElementById(
+      "generate"
+    ) as HTMLButtonElement;
+    generateButton?.addEventListener("click", () => {
+      this.handleGenerateClick();
     });
+  }
 
+  private bindToggleAdvanced() {
     document
       .getElementById("toggle-advanced")
       ?.addEventListener("change", (event) => {
@@ -220,174 +106,311 @@ export class UIEventHandler {
             : "none";
         }
       });
+  }
 
-    document.getElementById("seed")?.addEventListener("input", (event) => {
-      const value = parseInt((event.target as HTMLInputElement).value);
-      if (value === -1) {
-        document.getElementById("last-seed")?.setAttribute("disabled", "true");
-        document
-          .getElementById("random-seed")
-          ?.setAttribute("disabled", "true");
-      } else {
-        document.getElementById("last-seed")?.removeAttribute("disabled");
-        document.getElementById("random-seed")?.removeAttribute("disabled");
-      }
+  private bindSeedControls() {
+    const seedInput = document.getElementById("seed") as HTMLInputElement;
+    const lastButton = document.getElementById("last-seed");
+    const randomButton = document.getElementById("random-seed");
+    seedInput?.addEventListener("input", (e) => {
+      const value = parseInt((e.target as HTMLInputElement).value);
+      [lastButton, randomButton].forEach((button) => {
+        button?.toggleAttribute("disabled", value === -1);
+      });
     });
 
-    document.getElementById("last-seed")?.addEventListener("click", () => {
+    lastButton?.addEventListener("click", () => {
       if (this.lastUsedSeed !== null) {
-        (document.getElementById("seed") as HTMLInputElement).value =
-          this.lastUsedSeed.toString();
+        seedInput.value = this.lastUsedSeed.toString();
       }
     });
 
-    document.getElementById("random-seed")?.addEventListener("click", () => {
-      (document.getElementById("seed") as HTMLInputElement).value = "-1";
+    randomButton?.addEventListener("click", () => {
+      seedInput.value = "-1";
     });
+  }
 
-    document.getElementById("cfg-range")?.addEventListener("input", (event) => {
-      const value = (event.target as HTMLInputElement).value;
-      (document.getElementById("cfg-number") as HTMLInputElement).value = value;
-    });
+  private bindCfgSync() {
+    syncRangeAndNumber("cfg-range", "cfg-number");
+  }
 
+  private bindStepsSync() {
+    syncRangeAndNumber("steps-range", "steps-number");
+  }
+
+  private bindMaskButtons() {
     document
-      .getElementById("cfg-number")
-      ?.addEventListener("input", (event) => {
-        const value = (event.target as HTMLInputElement).value;
-        (document.getElementById("cfg-range") as HTMLInputElement).value =
-          value;
-      });
-
-    document
-      .getElementById("steps-range")
-      ?.addEventListener("input", (event) => {
-        const value = (event.target as HTMLInputElement).value;
-        (document.getElementById("steps-number") as HTMLInputElement).value =
-          value;
-      });
-
-    document
-      .getElementById("steps-number")
-      ?.addEventListener("input", (event) => {
-        const value = (event.target as HTMLInputElement).value;
-        (document.getElementById("steps-range") as HTMLInputElement).value =
-          value;
-      });
-
-    document
-      .getElementById("ex-size-range")
-      ?.addEventListener("input", (event) => {
-        const value = (event.target as HTMLInputElement).value;
-        (document.getElementById("ex-size") as HTMLInputElement).value = value;
-      });
-
-    const clearMaskButton = document.getElementById(
-      "clear-mask-button"
-    ) as HTMLButtonElement;
-    if (clearMaskButton) {
-      clearMaskButton.addEventListener("click", () => {
+      .getElementById("clear-mask-button")
+      ?.addEventListener("click", () => {
         this.canvasHandler?.clearCanvas();
       });
-    }
 
-    const undoMaskButton = document.getElementById(
-      "undo-mask-button"
-    ) as HTMLButtonElement;
-    if (undoMaskButton) {
-      undoMaskButton.addEventListener("click", () => {
+    document
+      .getElementById("undo-mask-button")
+      ?.addEventListener("click", () => {
         this.canvasHandler?.undoLastMaskLine();
       });
-    }
+  }
 
+  private bindFileUpload() {
     const fileUpload = document.getElementById(
       "fileupload"
     ) as HTMLInputElement;
-    if (fileUpload) {
-      fileUpload.addEventListener("change", (event) => {
-        const target = event.target as HTMLInputElement;
-        const file = target.files && target.files[0];
-        if (file) {
-          this.canvasHandler?.handleImageUpload(file);
-        }
-      });
-    }
+    fileUpload?.addEventListener("change", (e) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (file) this.canvasHandler?.handleImageUpload(file);
+    });
+  }
 
-    const toggleDrawButton = document.getElementById(
-      "toggle-draw-button"
-    ) as HTMLButtonElement;
-    if (toggleDrawButton) {
-      toggleDrawButton.addEventListener("click", () => {
-        this.canvasHandler?.toggleDrawMode();
-        toggleDrawButton.classList.toggle("bg-indigo-500");
-        toggleDrawButton.classList.toggle("text-white");
-        toggleDrawButton.classList.toggle("bg-gray-100");
-        toggleDrawButton.classList.toggle("text-gray-700");
-      });
-    }
-
+  private bindAppStateSubscription() {
     // Suscribirse a cambios de estado de appState para actualizar la UI
     appState.subscribe((state) => {
-      const generateButton = document.getElementById(
-        "generate"
-      ) as HTMLButtonElement;
-      if (generateButton) {
-        generateButton.disabled = state.isLoading;
-        generateButton.textContent = state.isLoading
-          ? "Generando..."
-          : "Generate Image";
-      }
+      this.updateGenerateButton(state.isLoading);
+      this.handleAppStateErrors(state.error);
+      this.renderGeneratedImage(state);
+      this.renderImageHistory(state.imageHistory);
+    });
+  }
 
-      if (state.error) {
-        alert(state.error);
-      }
+  private async handleGenerateClick() {
+    const uiValues = this.readUIValues();
 
-      const generatedImageContainer = document.getElementById("generatedImage");
-      if (generatedImageContainer) {
-        if (state.isLoading && state.progress) {
-          const percent = Math.round(
-            (state.progress.value / state.progress.max) * 100
-          );
-          generatedImageContainer.innerHTML = `
-            <div class="w-full flex flex-col items-center justify-center h-full">
-              <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
-                <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
-              </div>
-              <span class="text-indigo-700 font-semibold">${percent}%</span>
-            </div>
-          `;
-        } else if (state.generatedImageUrl) {
-          generatedImageContainer.innerHTML = `
-            <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
-          `;
-        } else {
-          generatedImageContainer.innerHTML =
-            '<p class="text-gray-500">Generated image will appear here</p>';
+    if (!uiValues.prompt) {
+      alert("Por favor, ingresa un prompt");
+      return;
+    }
+    appState.startMultipleGeneration(uiValues.exSize);
+    const isMask = this.isMaskGeneration();
+
+    for (let i = 0; i < uiValues.exSize; i++) {
+      appState.updateGenerationProgress(i + 1);
+      try {
+        appState.startLoading();
+        const { image, seed } = isMask
+          ? await this.generateWithMask(uiValues)
+          : await this.generateImage(uiValues);
+
+        window.dispatchEvent(
+          new CustomEvent("imagenAPI", {
+            detail: `data:image/png;base64,${image}`,
+            bubbles: true,
+            composed: true,
+          })
+        );
+
+        this.lastUsedSeed = seed;
+        appState.setGeneratedImage(`data:image/png;base64,${image}`);
+      } catch (error) {
+        appState.setError("Failed to generate image. Please try again.");
+        console.error("Error generating image:", error);
+      } finally {
+        if (i === uiValues.exSize - 1) {
+          appState.finishMultipleGeneration();
         }
       }
+    }
+  }
 
-      // Actualizar historial de imágenes
-      const imageHistoryContainer = document.querySelector(
-        "#imageHistory .flex.space-x-2"
-      );
-      if (imageHistoryContainer) {
-        imageHistoryContainer.innerHTML = ""; // Limpiar antes de añadir
-        // Display newest images first (left to right)
-        state.imageHistory
-          .slice()
-          .reverse()
-          .forEach((imageUrl) => {
-            const imgElement = document.createElement("img");
-            imgElement.src = imageUrl;
-            imgElement.className =
-              "object-cover rounded cursor-pointer border border-gray-600 shadow-md";
-            imgElement.addEventListener("click", () => {
-              // Aquí puedes añadir lógica para mostrar la imagen grande al hacer clic
-              console.log("Clicked on history image:", imageUrl);
-              appState.setState({ generatedImageUrl: imageUrl }); // O cargarla en el área principal
-            });
-            imageHistoryContainer.appendChild(imgElement);
-          });
+  private bindDimensionSync(
+    sourceInput: HTMLInputElement,
+    targetInput: HTMLInputElement,
+    transform: (value: number) => number
+  ): void {
+    sourceInput?.addEventListener("input", () => {
+      if (!this.isAspectRatioLocked || this.initialAspectRatio === null) {
+        return;
       }
+
+      const raw = parseInt(sourceInput.value, 10);
+      if (isNaN(raw) || raw <= 0) {
+        return;
+      }
+
+      targetInput.value = Math.round(transform(raw)).toString();
     });
+  }
+
+  private updateGenerateButton(isLoading: boolean): void {
+    const generateButton = document.getElementById(
+      "generate"
+    ) as HTMLButtonElement;
+    if (!generateButton) return;
+
+    generateButton.disabled = isLoading;
+    generateButton.textContent = isLoading ? "Generando..." : "Generate Image";
+  }
+
+  private handleAppStateErrors(error: string | null): void {
+    if (error) alert(error);
+  }
+
+  private renderGeneratedImage(state: {
+    isLoading: boolean;
+    progress: { value: number; max: number } | null;
+    generatedImageUrl: string | null;
+  }): void {
+    const container = document.getElementById("generatedImage");
+    if (!container) return;
+    if (state.isLoading && state.progress) {
+      const percent = Math.round(
+        (state.progress.value / state.progress.max) * 100
+      );
+      container.innerHTML = `
+          <div class="w-full flex flex-col items-center justify-center h-full">
+            <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
+              <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
+            </div>
+            <span class="text-indigo-700 font-semibold">${percent}%</span>
+          </div>
+        `;
+    } else if (state.generatedImageUrl) {
+      container.innerHTML = `
+          <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
+        `;
+    } else {
+      container.innerHTML =
+        '<p class="text-gray-500">Generated image will appear here</p>';
+    }
+  }
+
+  private renderImageHistory(imageHistory: string[]): void {
+    // Actualizar historial de imágenes
+    const historyContainer = document.querySelector(
+      "#imageHistory .flex.space-x-2"
+    );
+    if (!historyContainer) return;
+
+    historyContainer.innerHTML = ""; // Limpiar antes de añadir
+    // Display newest images first (left to right)
+    imageHistory
+      .slice()
+      .reverse()
+      .forEach((url) => {
+        const imgElement = document.createElement("img");
+        imgElement.src = url;
+        imgElement.className =
+          "object-cover rounded cursor-pointer border border-gray-600 shadow-md";
+        imgElement.addEventListener("click", () => {
+          appState.setState({ generatedImageUrl: url });
+        });
+        historyContainer.appendChild(imgElement);
+      });
+  }
+
+  private onToggleAspectRatio(
+    widthInput: HTMLInputElement,
+    heightInput: HTMLInputElement,
+    AspectRadioButton: HTMLButtonElement
+  ): void {
+    this.isAspectRatioLocked = !this.isAspectRatioLocked;
+    if (this.isAspectRatioLocked) {
+      this.setInitialAspectRatio(widthInput, heightInput);
+      AspectRadioButton.classList.add(
+        "ring-2",
+        "ring-indigo-500",
+        "text-white"
+      );
+      AspectRadioButton.classList.remove("bg-gray-100", "text-gray-700");
+    } else {
+      this.initialAspectRatio = null;
+      AspectRadioButton.classList.remove(
+        "ring-2",
+        "ring-indigo-500",
+        "text-white"
+      );
+      AspectRadioButton.classList.add("bg-gray-100", "text-gray-700");
+    }
+  }
+
+  private async generateWithMask(
+    uiValues: UIValues
+  ): Promise<{ image: string; seed: number }> {
+    const maskBlob = await this.canvasHandler!.buildCanvasMask();
+    if (!maskBlob) throw new Error("Failed to create mask blob.");
+
+    let imageBlob: Blob;
+    if (this.canvasHandler!.getFile()) {
+      imageBlob = this.canvasHandler!.getFile()!;
+    } else {
+      const url = this.canvasHandler!.getGeneratedUrl();
+      if (!url) throw new Error("No image provided for mask generation.");
+      imageBlob = await fetch(url).then((res) => res.blob());
+    }
+
+    return this.imageGenerator.generateImageWithMask({
+      prompt: uiValues.prompt!,
+      mask: maskBlob,
+      image: imageBlob,
+      seed: uiValues.seed!,
+      cfg: uiValues.cfg,
+      steps: uiValues.steps,
+      width: uiValues.width,
+      height: uiValues.height,
+      lora: uiValues.lora,
+    });
+  }
+
+  private async generateImage(
+    uiValues: UIValues
+  ): Promise<{ image: string; seed: number }> {
+    return this.imageGenerator.generateImage({
+      prompt: uiValues.prompt,
+      seed: uiValues.seed,
+      cfg: uiValues.cfg,
+      steps: uiValues.steps,
+      width: uiValues.width,
+      height: uiValues.height,
+      lora: uiValues.lora,
+    });
+  }
+
+  private readUIValues(): UIValues {
+    const prompt = (document.getElementById("prompt") as HTMLTextAreaElement)
+      .value;
+    const seed = this.parseInputInt("seed", -1);
+    const cfg = this.parseInputFloat("cfg-number", 1.0);
+    const steps = this.parseInputInt("steps-number", 25);
+    const exSize = this.parseInputInt("exSize", 1);
+    const width = this.parseInputInt("width", 1024);
+    const height = this.parseInputInt("height", 1024);
+    const loraSelect = document.getElementById(
+      "loras-select"
+    ) as HTMLSelectElement;
+
+    const lora =
+      loraSelect.value !== "--Select a Lora--" ? "" : loraSelect.value;
+    return { prompt, seed, cfg, steps, exSize, width, height, lora };
+  }
+
+  private isMaskGeneration(): boolean {
+    return Boolean(
+      this.canvasHandler &&
+        (this.canvasHandler.getMaskLines().length > 0 ||
+          this.canvasHandler.getFile() !== undefined)
+    );
+  }
+
+  private setInitialAspectRatio(
+    widthInput: HTMLInputElement,
+    heightInput: HTMLInputElement
+  ): void {
+    const w = parseInt(widthInput.value, 10);
+    const h = parseInt(heightInput.value, 10);
+    if (w > 0 && h > 0) {
+      this.initialAspectRatio = w / h;
+    }
+  }
+
+  private parseInputInt(inputId: string, defaultValue: number): number {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    const value = parseInt(input.value, 10);
+    return isNaN(value) || value <= 0 ? defaultValue : value;
+  }
+
+  private parseInputFloat(inputId: string, defaultValue: number): number {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    const value = parseFloat(input.value);
+    return isNaN(value) || value <= 0 ? defaultValue : value;
   }
 }

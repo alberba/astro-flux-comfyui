@@ -17,3 +17,18 @@ async function fetchUrlResponse(url: string): Promise<Response> {
   }
   return response;
 }
+
+export function syncRangeAndNumber(rangeInputId: string, numberInputId: string): void {
+  const rangeInput = document.getElementById(rangeInputId) as HTMLInputElement;
+  const numberInput = document.getElementById(numberInputId) as HTMLInputElement;
+
+  rangeInput?.addEventListener("input", () => {
+    numberInput.value = rangeInput.value;
+  });
+
+  numberInput?.addEventListener("input", () => {
+    rangeInput.value = numberInput.value;
+  });
+}
+
+export { getApiUrl, fetchUrlResponse };

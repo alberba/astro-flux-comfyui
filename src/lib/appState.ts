@@ -70,12 +70,6 @@ class AppStateManager {
     this.setState({ generatedImageUrl: null });
   }
 
-  public addIntermediateImage(url: string) {
-    this.setState({
-      intermediateImages: [...this.state.intermediateImages, url],
-    });
-  }
-
   public setProgress(progress: { value: number; max: number }) {
     this.setState({ progress });
   }
