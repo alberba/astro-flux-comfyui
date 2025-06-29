@@ -2,11 +2,7 @@ import { ImageGenerator } from "./imageGenerator";
 import { appState } from "./appState";
 import { CanvasHandler } from "./canvasHandler";
 import { syncRangeAndNumber } from "./utils";
-
-interface CanvasSize {
-  width: number;
-  height: number;
-}
+import type { CanvasSize } from "./types";
 
 interface UIValues {
   prompt: string;
