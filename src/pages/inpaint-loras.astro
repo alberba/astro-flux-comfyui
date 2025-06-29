@@ -6,8 +6,6 @@ import MainContainer from "../components/MainContainer.astro";
 
 <Layout title="Inpaint con Loras">
   <MainContainer showLoraSelect={true}>
-    <div id="dropzone-container" slot="image-container">
-      <DropZone id="dropZone" />
-    </div>
+    <DropZone id="dropZone" slot="image-container" />
   </MainContainer>
 </Layout>

@@ -10,10 +10,25 @@ interface Props {
 
 <div class="max-w-3xl mx-auto">
   <ImageContainer>
-    <slot name="image-container">
-      <!-- Default content for image container -->
-      <div id="dropzone-container" class="w-full h-64 border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center">
-        <p class="text-gray-500">Drop your images here or click to upload</p>
+    <slot name="image-container" slot="image-container">
+      <div
+        id="generatedImage"
+        class="w-full aspect-[3/2] border rounded bg-gray-50 flex items-center justify-center relative group">
+        <p class="text-gray-500">Generated image will appear here</p>
+        <img
+          id="imageOutput"
+          src=""
+          alt="Generated Image"
+          class="hidden w-full h-full object-contain absolute top-0 left-0"
+        />
+        <!-- Image History Slider -->
+      </div>
+      <div
+        id="imageHistory"
+        class="border rounded bg-gray-50 flex items-center p-2 mt-2 h-24">
+        <div class="flex space-x-2 overflow-x-auto h-full pb-2">
+          <!-- History images will be added here dynamically -->
+        </div>
       </div>
     </slot>
   </ImageContainer>
