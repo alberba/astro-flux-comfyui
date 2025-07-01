@@ -7,7 +7,7 @@ export class ImageGenerator {
   private clientId: string;
 
   constructor(apiEndpointWorkflow?: string) {
-    this.apiUrl = import.meta.env.PUBLIC_API_URL_BASE
+    this.apiUrl = import.meta.env.PUBLIC_API_URL_BASE;
     this.wsUrl = import.meta.env.PUBLIC_WS_URL_BASE;
 
     this.apiUrl += apiEndpointWorkflow || "/generate-simple";
@@ -31,22 +31,21 @@ export class ImageGenerator {
     this.ws = new WebSocket(wsUrl.toString());
 
     this.ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "progress" && data.data) {
-          appState.setProgress({ value: data.data.value, max: data.data.max });
+      if (typeof event.data === "string") {
+        try {
+          const msg = JSON.parse(event.data);
+
+          if (msg.type === "progress") {
+            appState.setProgress({ value: msg.data.value, max: msg.data.max });
+            return;
+          }
+
+          // ...otros tipos de mensaje en texto
+        } catch (err) {
+          console.error("JSON inesperado:", err, event.data);
         }
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
+        return;
       }
-    };
-
-    this.ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    this.ws.onclose = () => {
-      console.log("WebSocket connection closed");
     };
   }
 

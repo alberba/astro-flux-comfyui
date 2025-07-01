@@ -201,7 +201,7 @@ import InputNumber from "./InputNumber.astro";
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const response = await fetchUrlResponse(getApiUrl());
+      const response = await fetchUrlResponse(getApiUrl() + "/get-loras");
       setLoraSelect(await response.json());
     } catch (error) {
       console.error("Error fetching Loras:", error);

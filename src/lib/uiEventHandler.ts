@@ -367,7 +367,7 @@ export class UIEventHandler {
     const seed = this.parseInputInt("seed", -1);
     const cfg = this.parseInputFloat("cfg-number", 1.0);
     const steps = this.parseInputInt("steps-number", 25);
-    const exSize = this.parseInputInt("exSize", 1);
+    const exSize = this.parseInputInt("ex-size", 1);
     const width = this.parseInputInt("width", 1024);
     const height = this.parseInputInt("height", 1024);
     const loraSelect = document.getElementById(
