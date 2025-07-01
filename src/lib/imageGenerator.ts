@@ -149,4 +149,16 @@ export class ImageGenerator {
       this.ws = null;
     }
   }
+
+  public downloadImage(
+    dataURL: string,
+    filename: string = "generated_image.png"
+  ) {
+    const link = document.createElement("a");
+    link.href = dataURL;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }

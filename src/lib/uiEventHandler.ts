@@ -41,6 +41,7 @@ export class UIEventHandler {
 
     this.bindMaskButtons();
     this.bindFileUpload();
+    this.bindDownloadButtons();
 
     this.bindAppStateSubscription();
   }
@@ -160,6 +161,29 @@ export class UIEventHandler {
           return;
         }
         this.canvasHandler?.handleImageUpload(file);
+      }
+    });
+  }
+
+  private bindDownloadButtons() {
+    const downloadCanvasBtn = document.getElementById(
+      "downloadCanvasBtn"
+    ) as HTMLButtonElement;
+    const downloadGeneratedImageBtn = document.getElementById(
+      "downloadGeneratedImageBtn"
+    ) as HTMLButtonElement;
+
+    downloadCanvasBtn?.addEventListener("click", () => {
+      this.canvasHandler?.downloadCanvasImage();
+    });
+
+    downloadGeneratedImageBtn?.addEventListener("click", () => {
+      console.log("Descargando imagen generada...");
+      const imageOutput = document.getElementById(
+        "imageOutput"
+      ) as HTMLImageElement;
+      if (imageOutput && imageOutput.src) {
+        this.imageGenerator.downloadImage(imageOutput.src);
       }
     });
   }
@@ -303,8 +327,26 @@ export class UIEventHandler {
           `;
       } else if (state.generatedImageUrl) {
         container.innerHTML = `
-            <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
+            <button
+              id="downloadGeneratedImageBtn"
+              class="absolute top-2 right-2 bg-indigo-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              title="Descargar imagen generada"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                  clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <img id="imageOutput" src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
           `;
+        this.bindDownloadButtons(); // Re-bind download button after rendering new image
       } else {
         container.innerHTML =
           '<p class="text-gray-500">Generated image will appear here</p>';

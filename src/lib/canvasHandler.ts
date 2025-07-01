@@ -22,6 +22,7 @@ export class CanvasHandler {
   private generatedUrl: string | null = null;
   private MAX_SIZE_MB = 50;
   private MAX_SIZE_BYTES = this.MAX_SIZE_MB * 1024 * 1024;
+  private downloadCanvasBtn: HTMLButtonElement | null = null;
 
   constructor(
     canvasId: string,
@@ -32,7 +33,9 @@ export class CanvasHandler {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d");
     this.dropZone = document.getElementById(dropZoneId) as HTMLDivElement;
-    this.fileInput = document.getElementById(fileInputId) as HTMLInputElement;
+    this.downloadCanvasBtn = document.getElementById(
+      "downloadCanvasBtn"
+    ) as HTMLButtonElement;
 
     if (!this.ctx) {
       console.error("Could not get canvas context");
@@ -175,6 +178,7 @@ export class CanvasHandler {
 
   private startDrawing(event: MouseEvent) {
     this.isDrawing = true;
+    this.downloadCanvasBtn?.classList.add("hidden");
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = this.canvas.width / rect.width;
     const scaleY = this.canvas.height / rect.height;
@@ -214,6 +218,7 @@ export class CanvasHandler {
 
   private stopDrawing() {
     this.isDrawing = false;
+    this.downloadCanvasBtn?.classList.remove("hidden");
   }
 
   private redrawCanvas() {
@@ -283,6 +288,30 @@ export class CanvasHandler {
 
   public setColor(newColor: string) {
     this.color = newColor;
+  }
+
+  public downloadCanvasImage() {
+    if (this.generatedImage) {
+      // If there's a generated image, use it for download
+      const link = document.createElement("a");
+      link.href = this.generatedImage;
+      link.download = "generated_image.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      console.log("Downloading generated image");
+    } else {
+      // Otherwise, download the current canvas content
+      if (this.file) {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(this.file);
+        link.download = this.file.name || "canvas_image.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      console.log("Downloading canvas image");
+    }
   }
 
   public getMaskLines() {
