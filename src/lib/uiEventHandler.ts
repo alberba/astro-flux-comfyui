@@ -143,13 +143,24 @@ export class UIEventHandler {
   }
 
   private bindFileUpload() {
+    const MAX_SIZE_MB = 50;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
     const fileUpload = document.getElementById(
       "fileupload"
     ) as HTMLInputElement;
     fileUpload?.addEventListener("change", (e) => {
       const target = e.target as HTMLInputElement;
       const file = target.files?.[0];
-      if (file) this.canvasHandler?.handleImageUpload(file);
+      if (file) {
+        if (file.size > MAX_SIZE_BYTES) {
+          alert(
+            `La imagen es demasiado grande. El tamaño máximo permitido es ${MAX_SIZE_MB}MB.`
+          );
+          target.value = ""; // Clear the file
+          return;
+        }
+        this.canvasHandler?.handleImageUpload(file);
+      }
     });
   }
 

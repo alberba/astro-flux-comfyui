@@ -20,6 +20,8 @@ export class CanvasHandler {
   private brushSize = 10;
   private file: File | undefined;
   private generatedUrl: string | null = null;
+  private MAX_SIZE_MB = 50;
+  private MAX_SIZE_BYTES = this.MAX_SIZE_MB * 1024 * 1024;
 
   constructor(
     canvasId: string,
@@ -62,11 +64,6 @@ export class CanvasHandler {
 
     // Handle dropped files
     container.addEventListener("drop", this.handleDrop.bind(this), false);
-
-    this.fileInput.addEventListener(
-      "change",
-      this.handleFileInputChange.bind(this)
-    );
 
     this.canvas.addEventListener("mousedown", this.startDrawing.bind(this));
     this.canvas.addEventListener("mousemove", this.draw.bind(this));
@@ -118,13 +115,15 @@ export class CanvasHandler {
     this.generatedImage = null;
 
     if (this.file) {
+      if (this.file.size > this.MAX_SIZE_BYTES) {
+        alert(
+          `La imagen es demasiado grande. El tamaño máximo permitido es ${this.MAX_SIZE_MB}MB.`
+        );
+        this.file = undefined; // Clear the file
+        return;
+      }
       this.loadImage(this.file);
     }
-  }
-
-  private handleFileInputChange(e: Event) {
-    this.file = (this.fileInput.files as FileList)?.[0];
-    this.loadImage(this.file!);
   }
 
   public loadImage(file: File) {
