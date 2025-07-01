@@ -106,7 +106,6 @@ export class ImageGenerator {
         this.connectWebSocket();
       }
       appState.clearProgress();
-      console.log(params.image);
       console.log("API URL:", this.apiUrl);
 
       const formData = new FormData();

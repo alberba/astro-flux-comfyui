@@ -12,7 +12,6 @@ export function initializeUI(apiEndpointWorkflow?: string): void {
       "canvas",
       "dropZone",
       "fileupload",
-      "container"
     );
 
     window.addEventListener("imagenAPI", (e: Event) => {

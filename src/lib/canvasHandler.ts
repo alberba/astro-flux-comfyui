@@ -4,7 +4,6 @@ export class CanvasHandler {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D | null;
   private dropZone: HTMLDivElement;
-  private fileInput: HTMLInputElement;
   private generatedImage: string | null = null;
   private maskLines: {
     startX: number;
@@ -19,17 +18,11 @@ export class CanvasHandler {
   private color = "black";
   private brushSize = 10;
   private file: File | undefined;
-  private generatedUrl: string | null = null;
   private MAX_SIZE_MB = 50;
   private MAX_SIZE_BYTES = this.MAX_SIZE_MB * 1024 * 1024;
   private downloadCanvasBtn: HTMLButtonElement | null = null;
 
-  constructor(
-    canvasId: string,
-    dropZoneId: string,
-    fileInputId: string,
-    contentId: string
-  ) {
+  constructor(canvasId: string, dropZoneId: string, contentId: string) {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d");
     this.dropZone = document.getElementById(dropZoneId) as HTMLDivElement;
@@ -114,7 +107,6 @@ export class CanvasHandler {
   private handleDrop(e: DragEvent) {
     const dt = e.dataTransfer;
     this.file = dt?.files?.[0];
-    this.generatedUrl = null;
     this.generatedImage = null;
 
     if (this.file) {
@@ -158,6 +150,7 @@ export class CanvasHandler {
       };
       img.src = e.target!.result as string;
     };
+    this.file = file;
     reader.readAsDataURL(file);
   }
 
@@ -222,16 +215,13 @@ export class CanvasHandler {
   }
 
   private redrawCanvas() {
-    console.log(this.generatedImage);
     if (this.generatedImage) {
-      console.log("generatedImage", this.generatedImage);
       const img = new Image();
       img.onload = () => {
         this.drawMaskLines(img);
       };
       img.src = this.generatedImage;
     } else {
-      console.log("file", this.file);
       const reader = new FileReader();
       if (this.file) {
         reader.onload = (e) => {
@@ -271,7 +261,6 @@ export class CanvasHandler {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.maskLines = [];
       this.file = undefined;
-      this.generatedUrl = null;
       this.generatedImage = null;
       // Hide canvas and show drop zone content
       this.canvas.classList.add("hidden");
@@ -321,9 +310,8 @@ export class CanvasHandler {
   public getFile() {
     return this.file;
   }
-
-  public getGeneratedUrl() {
-    return this.generatedUrl;
+  public getGeneratedImage() {
+    return this.generatedImage;
   }
 
   public getCanvasSize(): CanvasSize {

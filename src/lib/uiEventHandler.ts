@@ -412,12 +412,12 @@ export class UIEventHandler {
     if (!maskBlob) throw new Error("Failed to create mask blob.");
 
     let imageBlob: Blob;
-    if (this.canvasHandler!.getFile()) {
-      imageBlob = this.canvasHandler!.getFile()!;
+    if (this.canvasHandler!.getGeneratedImage()) {
+      const image = this.canvasHandler!.getGeneratedImage();
+      if (!image) throw new Error("No image available for mask generation.");
+      imageBlob = await fetch(image).then((res) => res.blob());
     } else {
-      const url = this.canvasHandler!.getGeneratedUrl();
-      if (!url) throw new Error("No image provided for mask generation.");
-      imageBlob = await fetch(url).then((res) => res.blob());
+      imageBlob = this.canvasHandler!.getFile()!;
     }
 
     return this.imageGenerator.generateImageWithMask({
