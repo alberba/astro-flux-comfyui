@@ -138,13 +138,7 @@ export class UIEventHandler {
     document
       .getElementById("clear-mask-button")
       ?.addEventListener("click", () => {
-        this.canvasHandler?.clearCanvas();
-      });
-
-    document
-      .getElementById("undo-mask-button")
-      ?.addEventListener("click", () => {
-        this.canvasHandler?.undoLastMaskLine();
+        this.canvasHandler?.clearMask();
       });
   }
 
@@ -247,26 +241,65 @@ export class UIEventHandler {
     generatedImageUrl: string | null;
   }): void {
     const container = document.getElementById("generatedImage");
-    if (!container) return;
-    if (state.isLoading && state.progress) {
-      const percent = Math.round(
-        (state.progress.value / state.progress.max) * 100
-      );
-      container.innerHTML = `
-          <div class="w-full flex flex-col items-center justify-center h-full">
-            <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
-              <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
+    const dropZone = document.getElementById("container");
+    if (dropZone) {
+      const content = document.getElementById("content");
+      content?.classList.add("hidden");
+      if (state.isLoading && state.progress) {
+        let progress = document.getElementById("progress");
+        if (!progress) {
+          progress = document.createElement("div");
+          progress.id = "progress";
+          progress.classList.add(
+            "w-full",
+            "flex",
+            "flex-col",
+            "items-center",
+            "justify-center",
+            "h-full",
+            "absolute",
+            "backdrop-blur-lg"
+          );
+        }
+        const percent = Math.round(
+          (state.progress.value / state.progress.max) * 100
+        );
+
+        progress.innerHTML = `
+                <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
+                  <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
+                </div>
+                <span class="text-indigo-700 font-semibold">${percent}%</span>`;
+        dropZone.prepend(progress);
+      } else if (state.generatedImageUrl) {
+        const progress = document.getElementById("progress");
+        if (progress) {
+          progress.remove();
+        }
+      }
+    } else if (container) {
+      if (state.isLoading && state.progress) {
+        const percent = Math.round(
+          (state.progress.value / state.progress.max) * 100
+        );
+        container.innerHTML = `
+            <div class="w-full flex flex-col items-center justify-center h-full">
+              <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
+                <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
+              </div>
+              <span class="text-indigo-700 font-semibold">${percent}%</span>
             </div>
-            <span class="text-indigo-700 font-semibold">${percent}%</span>
-          </div>
-        `;
-    } else if (state.generatedImageUrl) {
-      container.innerHTML = `
-          <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
-        `;
+          `;
+      } else if (state.generatedImageUrl) {
+        container.innerHTML = `
+            <img src="${state.generatedImageUrl}" alt="Generated image" class="max-w-full max-h-full" />
+          `;
+      } else {
+        container.innerHTML =
+          '<p class="text-gray-500">Generated image will appear here</p>';
+      }
     } else {
-      container.innerHTML =
-        '<p class="text-gray-500">Generated image will appear here</p>';
+      return;
     }
   }
 
@@ -375,7 +408,7 @@ export class UIEventHandler {
     ) as HTMLSelectElement;
 
     const lora =
-      loraSelect.value !== "--Select a Lora--" ? "" : loraSelect.value;
+      loraSelect.value === "--Select a Lora--" ? "" : loraSelect.value;
     return { prompt, seed, cfg, steps, exSize, width, height, lora };
   }
 

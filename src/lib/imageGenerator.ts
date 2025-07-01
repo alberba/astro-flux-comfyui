@@ -39,8 +39,6 @@ export class ImageGenerator {
             appState.setProgress({ value: msg.data.value, max: msg.data.max });
             return;
           }
-
-          // ...otros tipos de mensaje en texto
         } catch (err) {
           console.error("JSON inesperado:", err, event.data);
         }

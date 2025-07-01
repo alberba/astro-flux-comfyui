@@ -1,9 +1,7 @@
 import { ImageGenerator } from "./imageGenerator";
-import { appState } from "./appState";
 import { CanvasHandler } from "./canvasHandler";
 import { UIEventHandler } from "./uiEventHandler";
 
-let uiInitialized = false; // Flag para asegurar que la UI se inicialice solo una vez
 
 export function initializeUI(apiEndpointWorkflow?: string): void {
   const imageGenerator = new ImageGenerator(apiEndpointWorkflow);

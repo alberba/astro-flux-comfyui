@@ -114,16 +114,7 @@ export class CanvasHandler {
   private handleDrop(e: DragEvent) {
     const dt = e.dataTransfer;
     this.file = dt?.files?.[0];
-    this.dropZone.dispatchEvent(
-      new CustomEvent("file:loaded", { detail: this.file, bubbles: true })
-    );
     this.generatedUrl = null;
-    this.dropZone.dispatchEvent(
-      new CustomEvent("updateGeneratedUrl", {
-        detail: this.generatedUrl,
-        bubbles: true,
-      })
-    );
     this.generatedImage = null;
 
     if (this.file) {
@@ -133,9 +124,6 @@ export class CanvasHandler {
 
   private handleFileInputChange(e: Event) {
     this.file = (this.fileInput.files as FileList)?.[0];
-    this.dropZone.dispatchEvent(
-      new CustomEvent("file:loaded", { detail: this.file, bubbles: true })
-    );
     this.loadImage(this.file!);
   }
 
@@ -218,11 +206,6 @@ export class CanvasHandler {
       endY: currentY,
       lineWidth: this.brushSize,
     });
-    const maskLinesEvent = new CustomEvent("masklines:update", {
-      detail: this.maskLines,
-      bubbles: true,
-    });
-    this.dropZone.dispatchEvent(maskLinesEvent);
 
     this.redrawCanvas();
 
@@ -235,13 +218,16 @@ export class CanvasHandler {
   }
 
   private redrawCanvas() {
+    console.log(this.generatedImage);
     if (this.generatedImage) {
+      console.log("generatedImage", this.generatedImage);
       const img = new Image();
       img.onload = () => {
         this.drawMaskLines(img);
       };
       img.src = this.generatedImage;
     } else {
+      console.log("file", this.file);
       const reader = new FileReader();
       if (this.file) {
         reader.onload = (e) => {
@@ -274,14 +260,6 @@ export class CanvasHandler {
   public clearMask() {
     this.maskLines = [];
     this.redrawCanvas();
-    // Optionally hide mask-related UI elements if they were shown
-    document.getElementById("clearMask")?.classList.add("hidden");
-    document.getElementById("maskSettings")?.classList.add("hidden");
-    document.getElementById("maskSettings")?.classList.remove("flex");
-    document.getElementById("content")?.classList.remove("hidden");
-    this.canvas.classList.add("hidden");
-    this.file = undefined;
-    this.generatedUrl = null;
   }
 
   public clearCanvas() {
@@ -300,23 +278,8 @@ export class CanvasHandler {
     }
   }
 
-  public undoLastMaskLine() {
-    if (this.maskLines.length > 0) {
-      this.maskLines.pop(); // Remove the last line
-      this.redrawCanvas();
-    }
-  }
-
   public handleImageUpload(file: File) {
     this.loadImage(file);
-  }
-
-  public toggleDrawMode() {
-    // This method will toggle drawing mode on/off
-    // The actual drawing logic is handled by mouse events
-    // This might just be for UI feedback like changing cursor or button state
-    // For now, it doesn't need to do anything complex here, as drawing is always on when mouse is down.
-    // If a more explicit 'draw mode' is needed, `isDrawing` and mouse event listeners would need to be re-evaluated.
   }
 
   public setColor(newColor: string) {
