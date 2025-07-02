@@ -9,7 +9,7 @@ const { id } = Astro.props;
 <div id="dropZone">
   <div
     id="container"
-    class="relative w-full aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors group"
+    class="relative w-full aspect-3/2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors group"
   >
     <button
       id="downloadCanvasBtn"
@@ -46,7 +46,7 @@ const { id } = Astro.props;
       </p>
       <button
         type="button"
-        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         onclick={`document.getElementById('fileupload').click()`}
       >
         Selecciona un archivo
@@ -66,11 +66,11 @@ const { id } = Astro.props;
       <div class="flex gap-2">
         <button
           id="blackMask"
-          class="w-8 h-8 rounded-full bg-black border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="w-8 h-8 rounded-full bg-black border-2 border-gray-300 hover:border-indigo-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           title="Máscara negra"></button>
         <button
           id="whiteMask"
-          class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-500"
+          class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 hover:border-indigo-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-500"
           title="Máscara blanca"></button>
       </div>
       <div class="flex flex-col gap-2 w-full">
@@ -92,7 +92,7 @@ const { id } = Astro.props;
     </div>
     <button
       id="clearMask"
-      class="bg-red-500 text-white py-2 px-16 rounded hover:bg-red-600 hidden"
+      class="bg-red-500 text-white py-2 px-16 rounded-sm hover:bg-red-600 hidden"
     >
       Limpiar Máscara
     </button>

@@ -372,7 +372,7 @@ export class UIEventHandler {
         const imgElement = document.createElement("img");
         imgElement.src = url;
         imgElement.className =
-          "object-cover rounded cursor-pointer border border-gray-600 shadow-md";
+          "object-cover rounded-sm cursor-pointer border border-gray-600 shadow-md";
         imgElement.addEventListener("click", () => {
           appState.setState({ generatedImageUrl: url });
           this.canvasHandler?.loadImageFromUrl(url);
