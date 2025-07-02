@@ -284,7 +284,7 @@ export class UIEventHandler {
         let progress = document.getElementById("progress");
         if (!progress) {
           progress = document.createElement("div");
-          progress.id = "progress";
+          progress.id = "progressbar";
           progress.classList.add(
             "w-full",
             "flex",
@@ -318,7 +318,7 @@ export class UIEventHandler {
           (state.progress.value / state.progress.max) * 100
         );
         container.innerHTML = `
-            <div class="w-full flex flex-col items-center justify-center h-full">
+            <div id="progressbar" class="w-full flex flex-col items-center justify-center h-full">
               <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
                 <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
               </div>

@@ -5,6 +5,7 @@ export class ImageGenerator {
   private wsUrl: string;
   private ws: WebSocket | null = null;
   private clientId: string;
+  private _progressTimeoutId: number | null = null;
 
   constructor(apiEndpointWorkflow?: string) {
     this.apiUrl = import.meta.env.PUBLIC_API_URL_BASE;
@@ -37,6 +38,7 @@ export class ImageGenerator {
 
           if (msg.type === "progress") {
             appState.setProgress({ value: msg.data.value, max: msg.data.max });
+            this._startProgressTimeout();
             return;
           }
         } catch (err) {
@@ -45,6 +47,26 @@ export class ImageGenerator {
         return;
       }
     };
+  }
+
+  private _startProgressTimeout() {
+    if (this._progressTimeoutId) {
+      clearTimeout(this._progressTimeoutId);
+    }
+    this._progressTimeoutId = window.setTimeout(() => {
+      const progressContainer = document.querySelector("#progressbar");
+      const existingTextOutput = document.querySelector(
+        "#progress-text-warning"
+      );
+      if (!existingTextOutput) {
+        const textOutput = document.createElement("p");
+        textOutput.id = "progress-text-warning";
+        textOutput.textContent =
+          "El proceso esta tardando mas de lo esperado...";
+        progressContainer?.append(textOutput);
+      }
+      this._startProgressTimeout();
+    }, 5000);
   }
 
   async generateImage(params: {
@@ -57,11 +79,11 @@ export class ImageGenerator {
     lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {
-      // Conectar WebSocket si no está conectado
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         this.connectWebSocket();
       }
       appState.clearProgress();
+      this._startProgressTimeout();
 
       const response = await fetch(`${this.apiUrl}`, {
         method: "POST",
@@ -82,6 +104,10 @@ export class ImageGenerator {
 
       if (!response.ok) throw new Error("Failed to generate image");
       const data = await response.json();
+      if (this._progressTimeoutId) {
+        clearTimeout(this._progressTimeoutId);
+        this._progressTimeoutId = null;
+      }
       return { image: data.image, seed: data.seed };
     } catch (error) {
       console.error("Error generating image:", error);
@@ -101,11 +127,11 @@ export class ImageGenerator {
     lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {
-      // Conectar WebSocket si no está conectado
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         this.connectWebSocket();
       }
       appState.clearProgress();
+      this._startProgressTimeout();
       console.log("API URL:", this.apiUrl);
 
       const formData = new FormData();
@@ -135,6 +161,10 @@ export class ImageGenerator {
 
       if (!response.ok) throw new Error("Failed to generate image");
       const data = await response.json();
+      if (this._progressTimeoutId) {
+        clearTimeout(this._progressTimeoutId);
+        this._progressTimeoutId = null;
+      }
       return { image: data.image, seed: data.seed };
     } catch (error) {
       console.error("Error generating image:", error);
@@ -146,6 +176,10 @@ export class ImageGenerator {
     if (this.ws) {
       this.ws.close();
       this.ws = null;
+    }
+    if (this._progressTimeoutId) {
+      clearTimeout(this._progressTimeoutId);
+      this._progressTimeoutId = null;
     }
   }
 
