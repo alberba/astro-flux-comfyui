@@ -55,12 +55,16 @@ export class ImageGenerator {
     }
     this._progressTimeoutId = window.setTimeout(() => {
       const progressContainer = document.querySelector("#progressbar");
+      const isGenerateSimple = document.querySelector("#generatedImage");
       const existingTextOutput = document.querySelector(
         "#progress-text-warning"
       );
       if (!existingTextOutput) {
         const textOutput = document.createElement("p");
         textOutput.id = "progress-text-warning";
+        if (!isGenerateSimple) {
+          textOutput.className = "text-white text-shadow-lg/30";
+        }
         textOutput.textContent =
           "El proceso esta tardando mas de lo esperado...";
         progressContainer?.append(textOutput);
