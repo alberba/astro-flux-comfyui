@@ -1,7 +1,7 @@
 export const LORA_DISPLAY_NAMES: Record<string, string> = {
-  "Bibiloni1024.safetensors": "Antoni Bibiloni",
-  "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró",
-  "oliver1024.safetensors": "Antoni Oliver",
+  "Bibiloni1024.safetensors": "Antoni Bibiloni (bibiloni)",
+  "mascaroPerfeccionadoFlux.safetensors": "Miquel Mascaró (mqlmscr)",
+  "oliver1024.safetensors": "Antoni Oliver (oliver)",
 };
 
 export const LORA_TO_EXCLUDE: string =

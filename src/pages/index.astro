@@ -4,5 +4,21 @@ import MainContainer from "../components/MainContainer.astro";
 ---
 
 <Layout title="ComfyUI Image Generator">
-  <MainContainer />
+  <MainContainer>
+    <div slot="info-container">
+      <p>
+        Genera imágenes desde cero escribiendo una breve descripción. Ideal para
+        probar ideas sin cargar imágenes ni aplicar máscaras.
+      </p>
+      <p>
+        Simplemente introduce un prompt y ajusta los parámetros si lo deseas.
+      </p>
+    </div>
+    <div slot="tips-container">
+      <ul class="list-disc pl-5">
+        <li>Escribe el prompt en inglés</li>
+        <li>En caso de usar LoRA, empieza por "a photo of"</li>
+      </ul>
+    </div>
+  </MainContainer>
 </Layout>

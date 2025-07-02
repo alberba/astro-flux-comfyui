@@ -7,5 +7,23 @@ import MainContainer from "../components/MainContainer.astro";
 <Layout title="Face Enhancer">
   <MainContainer showLoraSelect={true}>
     <DropZone slot="image-container" id="dropZone" />
+    <div slot="info-container">
+      <p>
+        Mejora el rostro de una imagen ampliando su detalle. Selecciona la zona
+        facial y el sistema la regenerará con más calidad.
+      </p>
+      <p>
+        Proceso <strong>muy lento</strong>, usarlo solo para modificar rostros alejados o
+        imágenes pequeñas. En imágenes grandes, no hay mejoras.
+      </p>
+    </div>
+    <div slot="tips-container">
+      <ul class="flex list-disc flex-col gap-1 pl-5">
+        <li>
+          El modelo no es capaz de insertar objetos nuevos, solo modificarlos
+        </li>
+        <li>En caso de usar LoRA, basta con poner el nombre del sujeto</li>
+      </ul>
+    </div>
   </MainContainer>
 </Layout>

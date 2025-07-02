@@ -7,5 +7,18 @@ import MainContainer from "../components/MainContainer.astro";
 <Layout title="Inpaint con Loras">
   <MainContainer showLoraSelect={true}>
     <DropZone id="dropZone" slot="image-container" />
+    <div slot="info-container">
+      Sube una imagen, dibuja una máscara y si lo deseas, selecciona un
+      profesor. El sistema reemplazará esa zona respetando el fondo original.
+    </div>
+    <div slot="tips-container">
+      <ul class="flex list-disc flex-col gap-1 pl-5">
+        <li>
+          El modelo no es capaz de insertar objetos nuevos, solo modificarlos
+        </li>
+        <li>Escribe el prompt en inglés</li>
+        <li>En caso de usar LoRA, basta con poner el nombre del sujeto</li>
+      </ul>
+    </div>
   </MainContainer>
 </Layout>
