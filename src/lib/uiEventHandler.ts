@@ -375,6 +375,7 @@ export class UIEventHandler {
           "object-cover rounded cursor-pointer border border-gray-600 shadow-md";
         imgElement.addEventListener("click", () => {
           appState.setState({ generatedImageUrl: url });
+          this.canvasHandler?.loadImageFromUrl(url);
         });
         historyContainer.appendChild(imgElement);
       });
