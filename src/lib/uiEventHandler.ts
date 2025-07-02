@@ -281,7 +281,7 @@ export class UIEventHandler {
       const content = document.getElementById("content");
       content?.classList.add("hidden");
       if (state.isLoading && state.progress) {
-        let progress = document.getElementById("progress");
+        let progress = document.getElementById("progressbar");
         if (!progress) {
           progress = document.createElement("div");
           progress.id = "progressbar";
@@ -307,7 +307,7 @@ export class UIEventHandler {
                 <span class="text-indigo-700 font-semibold">${percent}%</span>`;
         dropZone.prepend(progress);
       } else if (state.generatedImageUrl) {
-        const progress = document.getElementById("progress");
+        const progress = document.getElementById("progressbar");
         if (progress) {
           progress.remove();
         }
