@@ -51,22 +51,22 @@ export class UIEventHandler {
     const widthInput = document.getElementById("width") as HTMLInputElement;
     const heightInput = document.getElementById("height") as HTMLInputElement;
     const toggleAspectRatioButton = document.getElementById(
-      "toggle-aspect-ratio"
+      "toggle-aspect-ratio",
     ) as HTMLButtonElement;
 
     toggleAspectRatioButton?.addEventListener("click", () => {
       this.onToggleAspectRatio(
         widthInput,
         heightInput,
-        toggleAspectRatioButton
+        toggleAspectRatioButton,
       );
     });
 
     this.bindDimensionSync(widthInput, heightInput, (w) =>
-      Math.round(w / this.initialAspectRatio!)
+      Math.round(w / this.initialAspectRatio!),
     );
     this.bindDimensionSync(heightInput, widthInput, (h) =>
-      Math.round(h * this.initialAspectRatio!)
+      Math.round(h * this.initialAspectRatio!),
     );
   }
 
@@ -84,7 +84,7 @@ export class UIEventHandler {
 
   private bindGenerateButton() {
     const generateButton = document.getElementById(
-      "generate"
+      "generate",
     ) as HTMLButtonElement;
     generateButton?.addEventListener("click", () => {
       this.handleGenerateClick();
@@ -147,7 +147,7 @@ export class UIEventHandler {
     const MAX_SIZE_MB = 50;
     const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
     const fileUpload = document.getElementById(
-      "fileupload"
+      "fileupload",
     ) as HTMLInputElement;
     fileUpload?.addEventListener("change", (e) => {
       const target = e.target as HTMLInputElement;
@@ -155,7 +155,7 @@ export class UIEventHandler {
       if (file) {
         if (file.size > MAX_SIZE_BYTES) {
           alert(
-            `La imagen es demasiado grande. El tamaño máximo permitido es ${MAX_SIZE_MB}MB.`
+            `La imagen es demasiado grande. El tamaño máximo permitido es ${MAX_SIZE_MB}MB.`,
           );
           target.value = ""; // Clear the file
           return;
@@ -167,10 +167,10 @@ export class UIEventHandler {
 
   private bindDownloadButtons() {
     const downloadCanvasBtn = document.getElementById(
-      "downloadCanvasBtn"
+      "downloadCanvasBtn",
     ) as HTMLButtonElement;
     const downloadGeneratedImageBtn = document.getElementById(
-      "downloadGeneratedImageBtn"
+      "downloadGeneratedImageBtn",
     ) as HTMLButtonElement;
 
     downloadCanvasBtn?.addEventListener("click", () => {
@@ -180,7 +180,7 @@ export class UIEventHandler {
     downloadGeneratedImageBtn?.addEventListener("click", () => {
       console.log("Descargando imagen generada...");
       const imageOutput = document.getElementById(
-        "imageOutput"
+        "imageOutput",
       ) as HTMLImageElement;
       if (imageOutput && imageOutput.src) {
         this.imageGenerator.downloadImage(imageOutput.src);
@@ -221,7 +221,7 @@ export class UIEventHandler {
             detail: `data:image/png;base64,${image}`,
             bubbles: true,
             composed: true,
-          })
+          }),
         );
 
         this.lastUsedSeed = seed;
@@ -240,7 +240,7 @@ export class UIEventHandler {
   private bindDimensionSync(
     sourceInput: HTMLInputElement,
     targetInput: HTMLInputElement,
-    transform: (value: number) => number
+    transform: (value: number) => number,
   ): void {
     sourceInput?.addEventListener("input", () => {
       if (!this.isAspectRatioLocked || this.initialAspectRatio === null) {
@@ -258,7 +258,7 @@ export class UIEventHandler {
 
   private updateGenerateButton(isLoading: boolean): void {
     const generateButton = document.getElementById(
-      "generate"
+      "generate",
     ) as HTMLButtonElement;
     if (!generateButton) return;
 
@@ -293,11 +293,11 @@ export class UIEventHandler {
             "justify-center",
             "h-full",
             "absolute",
-            "backdrop-blur-lg"
+            "backdrop-blur-lg",
           );
         }
         const percent = Math.round(
-          (state.progress.value / state.progress.max) * 100
+          (state.progress.value / state.progress.max) * 100,
         );
 
         progress.innerHTML = `
@@ -315,7 +315,7 @@ export class UIEventHandler {
     } else if (container) {
       if (state.isLoading && state.progress) {
         const percent = Math.round(
-          (state.progress.value / state.progress.max) * 100
+          (state.progress.value / state.progress.max) * 100,
         );
         container.innerHTML = `
             <div id="progressbar" class="w-full flex flex-col items-center justify-center h-full">
@@ -359,7 +359,7 @@ export class UIEventHandler {
   private renderImageHistory(imageHistory: string[]): void {
     // Actualizar historial de imágenes
     const historyContainer = document.querySelector(
-      "#imageHistory .flex.space-x-2"
+      "#imageHistory .flex.space-x-2",
     );
     if (!historyContainer) return;
 
@@ -384,7 +384,7 @@ export class UIEventHandler {
   private onToggleAspectRatio(
     widthInput: HTMLInputElement,
     heightInput: HTMLInputElement,
-    AspectRadioButton: HTMLButtonElement
+    AspectRadioButton: HTMLButtonElement,
   ): void {
     this.isAspectRatioLocked = !this.isAspectRatioLocked;
     if (this.isAspectRatioLocked) {
@@ -392,7 +392,7 @@ export class UIEventHandler {
       AspectRadioButton.classList.add(
         "ring-2",
         "ring-indigo-500",
-        "text-white"
+        "text-white",
       );
       AspectRadioButton.classList.remove("bg-gray-100", "text-gray-700");
     } else {
@@ -400,14 +400,14 @@ export class UIEventHandler {
       AspectRadioButton.classList.remove(
         "ring-2",
         "ring-indigo-500",
-        "text-white"
+        "text-white",
       );
       AspectRadioButton.classList.add("bg-gray-100", "text-gray-700");
     }
   }
 
   private async generateWithMask(
-    uiValues: UIValues
+    uiValues: UIValues,
   ): Promise<{ image: string; seed: number }> {
     const maskBlob = await this.canvasHandler!.buildCanvasMask();
     if (!maskBlob) throw new Error("Failed to create mask blob.");
@@ -435,7 +435,7 @@ export class UIEventHandler {
   }
 
   private async generateImage(
-    uiValues: UIValues
+    uiValues: UIValues,
   ): Promise<{ image: string; seed: number }> {
     return this.imageGenerator.generateImage({
       prompt: uiValues.prompt,
@@ -458,11 +458,11 @@ export class UIEventHandler {
     const width = this.parseInputInt("width", 1024);
     const height = this.parseInputInt("height", 1024);
     const loraSelect = document.getElementById(
-      "loras-select"
+      "loras-select",
     ) as HTMLSelectElement;
 
     const lora =
-      loraSelect.value === "--Select a Lora--" ? "" : loraSelect.value;
+      loraSelect.value === "-- Ningún Lora --" ? "" : loraSelect.value;
     return { prompt, seed, cfg, steps, exSize, width, height, lora };
   }
 
@@ -470,13 +470,13 @@ export class UIEventHandler {
     return Boolean(
       this.canvasHandler &&
         (this.canvasHandler.getMaskLines().length > 0 ||
-          this.canvasHandler.getFile() !== undefined)
+          this.canvasHandler.getFile() !== undefined),
     );
   }
 
   private setInitialAspectRatio(
     widthInput: HTMLInputElement,
-    heightInput: HTMLInputElement
+    heightInput: HTMLInputElement,
   ): void {
     const w = parseInt(widthInput.value, 10);
     const h = parseInt(heightInput.value, 10);

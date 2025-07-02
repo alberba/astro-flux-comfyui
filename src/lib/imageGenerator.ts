@@ -22,7 +22,7 @@ export class ImageGenerator {
         const r = (Math.random() * 16) | 0;
         const v = c === "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
-      }
+      },
     );
   }
 
@@ -57,7 +57,7 @@ export class ImageGenerator {
       const progressContainer = document.querySelector("#progressbar");
       const isGenerateSimple = document.querySelector("#generatedImage");
       const existingTextOutput = document.querySelector(
-        "#progress-text-warning"
+        "#progress-text-warning",
       );
       if (!existingTextOutput) {
         const textOutput = document.createElement("p");
@@ -189,7 +189,7 @@ export class ImageGenerator {
 
   public downloadImage(
     dataURL: string,
-    filename: string = "generated_image.png"
+    filename: string = "generated_image.png",
   ) {
     const link = document.createElement("a");
     link.href = dataURL;

@@ -27,7 +27,7 @@ export class CanvasHandler {
     this.ctx = this.canvas.getContext("2d");
     this.dropZone = document.getElementById(dropZoneId) as HTMLDivElement;
     this.downloadCanvasBtn = document.getElementById(
-      "downloadCanvasBtn"
+      "downloadCanvasBtn",
     ) as HTMLButtonElement;
 
     if (!this.ctx) {
@@ -45,7 +45,7 @@ export class CanvasHandler {
       container.addEventListener(
         eventName,
         this.preventDefaults.bind(this),
-        false
+        false,
       );
     });
 
@@ -79,10 +79,10 @@ export class CanvasHandler {
     whiteMask?.addEventListener("click", () => this.setColor("white"));
 
     const brushSizeInput = document.getElementById(
-      "brushSize"
+      "brushSize",
     ) as HTMLInputElement;
     const brushSizeValueSpan = document.getElementById(
-      "brushSizeValue"
+      "brushSizeValue",
     ) as HTMLSpanElement;
 
     brushSizeInput?.addEventListener("input", (event) => {
@@ -112,7 +112,7 @@ export class CanvasHandler {
     if (this.file) {
       if (this.file.size > this.MAX_SIZE_BYTES) {
         alert(
-          `La imagen es demasiado grande. El tamaño máximo permitido es ${this.MAX_SIZE_MB}MB.`
+          `La imagen es demasiado grande. El tamaño máximo permitido es ${this.MAX_SIZE_MB}MB.`,
         );
         this.file = undefined; // Clear the file
         return;
@@ -133,11 +133,11 @@ export class CanvasHandler {
           new CustomEvent("canvas:resize", {
             detail: { width: this.canvas.width, height: this.canvas.height },
             bubbles: true,
-          })
+          }),
         );
         console.log(
           "Aspect Ratio canvas: ",
-          this.canvas.width / this.canvas.height
+          this.canvas.width / this.canvas.height,
         );
         console.log("Aspect Ratio imagen: ", img.width / img.height);
 

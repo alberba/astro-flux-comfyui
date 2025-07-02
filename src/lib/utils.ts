@@ -29,11 +29,11 @@ async function fetchUrlResponse(url: string): Promise<Response> {
 
 export function syncRangeAndNumber(
   rangeInputId: string,
-  numberInputId: string
+  numberInputId: string,
 ): void {
   const rangeInput = document.getElementById(rangeInputId) as HTMLInputElement;
   const numberInput = document.getElementById(
-    numberInputId
+    numberInputId,
   ) as HTMLInputElement;
 
   rangeInput?.addEventListener("input", () => {

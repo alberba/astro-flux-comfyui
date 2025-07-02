@@ -2,17 +2,12 @@ import { ImageGenerator } from "./imageGenerator";
 import { CanvasHandler } from "./canvasHandler";
 import { UIEventHandler } from "./uiEventHandler";
 
-
 export function initializeUI(apiEndpointWorkflow?: string): void {
   const imageGenerator = new ImageGenerator(apiEndpointWorkflow);
   let canvasHandler: CanvasHandler | undefined;
 
   if (apiEndpointWorkflow !== "/generate-simple") {
-    canvasHandler = new CanvasHandler(
-      "canvas",
-      "dropZone",
-      "fileupload",
-    );
+    canvasHandler = new CanvasHandler("canvas", "dropZone", "fileupload");
 
     window.addEventListener("imagenAPI", (e: Event) => {
       const customEvent = e as CustomEvent;

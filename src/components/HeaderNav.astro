@@ -8,18 +8,18 @@ const className = ["flex justify-center", Astro.props.class]
   <div class="flex justify-center whitespace-nowrap">
     <a
       href="/lorasuib/"
-      class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap {Astro.url.pathname === '/' ? 'active-tab' : ''}"
+      class="tab-link {Astro.url.pathname === '/' ? 'active-tab' : ''} rounded-t-lg px-4 py-2 font-semibold whitespace-nowrap text-gray-700 hover:bg-indigo-100"
       >Generación de imágenes</a
     >
     <a
       href="/lorasuib/inpaint-loras/"
-      class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap {Astro.url.pathname === '/inpaint-loras' ? 'active-tab' : ''}"
+      class="tab-link {Astro.url.pathname === '/inpaint-loras' ? 'active-tab' : ''} rounded-t-lg px-4 py-2 font-semibold whitespace-nowrap text-gray-700 hover:bg-indigo-100"
     >
       Inpaint con Loras
     </a>
     <a
       href="/lorasuib/face-enhancer/"
-      class="tab-link px-4 py-2 rounded-t-lg font-semibold text-gray-700 hover:bg-indigo-100 whitespace-nowrap {Astro.url.pathname === '/face-enhancer' ? 'active-tab' : ''}"
+      class="tab-link {Astro.url.pathname === '/face-enhancer' ? 'active-tab' : ''} rounded-t-lg px-4 py-2 font-semibold whitespace-nowrap text-gray-700 hover:bg-indigo-100"
     >
       Face Enhancer
     </a>

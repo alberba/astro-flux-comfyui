@@ -9,11 +9,11 @@ const { id } = Astro.props;
 <div id="dropZone">
   <div
     id="container"
-    class="relative w-full aspect-3/2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors group"
+    class="group relative flex aspect-3/2 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-indigo-500"
   >
     <button
       id="downloadCanvasBtn"
-      class="absolute top-2 right-2 bg-indigo-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      class="absolute top-2 right-2 rounded-full bg-indigo-600 p-2 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       title="Descargar imagen"
     >
       <svg
@@ -28,7 +28,7 @@ const { id } = Astro.props;
           clip-rule="evenodd"></path>
       </svg>
     </button>
-    <div id={`content`} class="text-center p-4">
+    <div id={`content`} class="p-4 text-center">
       <svg
         class="mx-auto h-12 w-12 text-gray-400"
         stroke="currentColor"
@@ -46,7 +46,7 @@ const { id } = Astro.props;
       </p>
       <button
         type="button"
-        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
         onclick={`document.getElementById('fileupload').click()`}
       >
         Selecciona un archivo
@@ -61,20 +61,20 @@ const { id } = Astro.props;
     </div>
     <canvas id="canvas" class="hidden w-full"></canvas>
   </div>
-  <div class="flex flex-col gap-2 my-2 items-center">
-    <div class="items-center gap-2 hidden flex-row w-2/3" id="maskSettings">
+  <div class="my-2 flex flex-col items-center gap-2">
+    <div class="hidden w-2/3 flex-row items-center gap-2" id="maskSettings">
       <div class="flex gap-2">
         <button
           id="blackMask"
-          class="w-8 h-8 rounded-full bg-black border-2 border-gray-300 hover:border-indigo-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="h-8 w-8 rounded-full border-2 border-gray-300 bg-black hover:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
           title="Máscara negra"></button>
         <button
           id="whiteMask"
-          class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 hover:border-indigo-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="h-8 w-8 rounded-full border-2 border-gray-300 bg-white hover:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
           title="Máscara blanca"></button>
       </div>
-      <div class="flex flex-col gap-2 w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-0.5"
+      <div class="flex w-full flex-col gap-2">
+        <label class="mb-0.5 block text-sm font-medium text-gray-700"
           >Grosor del pincel</label
         >
         <input
@@ -83,16 +83,16 @@ const { id } = Astro.props;
           min="5"
           max="200"
           value="10"
-          class="h-2 w-full bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
         />
-        <span id="brushSizeValue" class="block text-sm text-gray-600 mt-1"
+        <span id="brushSizeValue" class="mt-1 block text-sm text-gray-600"
           >10</span
         >
       </div>
     </div>
     <button
       id="clearMask"
-      class="bg-red-500 text-white py-2 px-16 rounded-sm hover:bg-red-600 hidden"
+      class="hidden rounded-sm bg-red-500 px-16 py-2 text-white hover:bg-red-600"
     >
       Limpiar Máscara
     </button>
