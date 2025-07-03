@@ -21,7 +21,6 @@ export class UIEventHandler {
   private lastUsedSeed: number | null = null;
   private isAspectRatioLocked = false;
   private initialAspectRatio: number | null = null;
-  private canvasSize: CanvasSize = { width: 1024, height: 1024 };
 
   constructor(imageGenerator: ImageGenerator, canvasHandler?: CanvasHandler) {
     this.imageGenerator = imageGenerator;
@@ -393,12 +392,23 @@ export class UIEventHandler {
         loadingcontainer.id = "loading-text";
         loadingcontainer.textContent = "Cargando...";
       }
-      const imgContainer = document.querySelector("#generatedImage");
       const canvasContainer = document.querySelector("#container");
-      const target = imgContainer || canvasContainer;
-      if (target) {
-        target.innerHTML = ""; // Clear previous content
-        target.appendChild(loadingcontainer);
+      if (canvasContainer) {
+        loadingcontainer.classList.add(
+          "w-full",
+          "flex",
+          "items-center",
+          "justify-center",
+          "h-full",
+          "absolute",
+          "backdrop-blur-lg",
+          "text-white",
+        );
+        canvasContainer.prepend(loadingcontainer);
+      } else {
+        const imgContainer = document.querySelector("#generatedImage");
+        imgContainer!.innerHTML = ""; // Clear previous content
+        imgContainer!.appendChild(loadingcontainer);
       }
     } else {
       const loadingText = document.getElementById("loading-text");

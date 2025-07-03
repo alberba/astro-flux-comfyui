@@ -14,11 +14,9 @@ interface Props {
       <slot name="image-container" slot="image-container">
         <div
           id="generatedImage"
-          class="flex aspect-3/2 w-full items-center justify-center rounded-sm border bg-gray-50"
+          class="group relative flex aspect-3/2 w-full items-center justify-center rounded-sm border bg-gray-50"
         >
-          <p id="h" class="text-gray-500">
-            Generated image will appear here
-          </p>
+          <p id="h" class="text-gray-500">Generated image will appear here</p>
           <img
             id="imageOutput"
             src=""
