@@ -195,6 +195,7 @@ export class UIEventHandler {
       this.handleAppStateErrors(state.error);
       this.renderGeneratedImage(state);
       this.renderImageHistory(state.imageHistory);
+      this.handleLoadingAnimation(state.isLoading, state.progress);
     });
   }
 
@@ -379,6 +380,32 @@ export class UIEventHandler {
         });
         historyContainer.appendChild(imgElement);
       });
+  }
+
+  private handleLoadingAnimation(
+    isLoading: boolean,
+    progress: { value: number; max: number } | null,
+  ): void {
+    if (isLoading && progress === null) {
+      let loadingcontainer = document.getElementById("loading-text");
+      if (!loadingcontainer) {
+        loadingcontainer = document.createElement("p");
+        loadingcontainer.id = "loading-text";
+        loadingcontainer.textContent = "Cargando...";
+      }
+      const imgContainer = document.querySelector("#generatedImage");
+      const canvasContainer = document.querySelector("#container");
+      const target = imgContainer || canvasContainer;
+      if (target) {
+        target.innerHTML = ""; // Clear previous content
+        target.appendChild(loadingcontainer);
+      }
+    } else {
+      const loadingText = document.getElementById("loading-text");
+      if (loadingText) {
+        loadingText.remove();
+      }
+    }
   }
 
   private onToggleAspectRatio(
