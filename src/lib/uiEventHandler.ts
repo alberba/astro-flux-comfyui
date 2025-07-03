@@ -216,13 +216,15 @@ export class UIEventHandler {
           ? await this.generateWithMask(uiValues)
           : await this.generateImage(uiValues);
 
-        window.dispatchEvent(
-          new CustomEvent("imagenAPI", {
-            detail: `data:image/png;base64,${image}`,
-            bubbles: true,
-            composed: true,
-          }),
-        );
+        if (i === uiValues.exSize - 1) {
+          window.dispatchEvent(
+            new CustomEvent("imagenAPI", {
+              detail: `data:image/png;base64,${image}`,
+              bubbles: true,
+              composed: true,
+            }),
+          );
+        }
 
         this.lastUsedSeed = seed;
         appState.setGeneratedImage(`data:image/png;base64,${image}`);
@@ -458,6 +460,23 @@ export class UIEventHandler {
       imageBlob = this.canvasHandler!.getFile()!;
     }
 
+    if (this.isFaceEnhancerPage()) {
+      const maskBoundingBox = this.canvasHandler?.getMaskBoundingBox();
+      return this.imageGenerator.generateImageWithMaskEnhancer({
+        prompt: uiValues.prompt!,
+        mask: maskBlob,
+        image: imageBlob,
+        seed: uiValues.seed!,
+        cfg: uiValues.cfg,
+        steps: uiValues.steps,
+        width: uiValues.width,
+        height: uiValues.height,
+        lora: uiValues.lora,
+        maskWidth: maskBoundingBox?.width,
+        maskHeight: maskBoundingBox?.height,
+      });
+    }
+
     return this.imageGenerator.generateImageWithMask({
       prompt: uiValues.prompt!,
       mask: maskBlob,
@@ -532,5 +551,9 @@ export class UIEventHandler {
     const input = document.getElementById(inputId) as HTMLInputElement;
     const value = parseFloat(input.value);
     return isNaN(value) || value <= 0 ? defaultValue : value;
+  }
+
+  private isFaceEnhancerPage(): boolean {
+    return window.location.pathname === "/lorasuib/face-enhancer/";
   }
 }

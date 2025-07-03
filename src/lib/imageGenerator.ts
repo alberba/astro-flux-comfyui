@@ -176,6 +176,67 @@ export class ImageGenerator {
     }
   }
 
+  async generateImageWithMaskEnhancer(params: {
+    prompt: string;
+    mask: Blob;
+    image: Blob;
+    seed: number;
+    cfg: number;
+    steps: number;
+    width: number;
+    height: number;
+    lora?: string;
+    maskWidth?: number;
+    maskHeight?: number;
+  }): Promise<{ image: string; seed: number }> {
+    try {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        this.connectWebSocket();
+      }
+      appState.clearProgress();
+      this._startProgressTimeout();
+      console.log("API URL:", this.apiUrl);
+      params.maskWidth = Math.ceil(params.maskWidth!);
+      params.maskHeight = Math.ceil(params.maskHeight!);
+
+      const formData = new FormData();
+      formData.append("clientId", this.clientId);
+
+      for (const key in params) {
+        if (Object.prototype.hasOwnProperty.call(params, key)) {
+          const value = params[key as keyof typeof params];
+          if (value !== undefined) {
+            if (key === "mask" && value instanceof Blob) {
+              formData.append("mask", value, "mask.png");
+            } else if (key === "image" && value instanceof Blob) {
+              formData.append("image", value, "image.png");
+            } else if (typeof value === "number") {
+              formData.append(key, value.toString());
+            } else if (typeof value === "string") {
+              formData.append(key, value);
+            }
+          }
+        }
+      }
+
+      const response = await fetch(`${this.apiUrl}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to generate image");
+      const data = await response.json();
+      if (this._progressTimeoutId) {
+        clearTimeout(this._progressTimeoutId);
+        this._progressTimeoutId = null;
+      }
+      return { image: data.image, seed: data.seed };
+    } catch (error) {
+      console.error("Error generating image:", error);
+      throw error;
+    }
+  }
+
   disconnect() {
     if (this.ws) {
       this.ws.close();

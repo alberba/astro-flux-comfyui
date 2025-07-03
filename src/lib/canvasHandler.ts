@@ -1,4 +1,4 @@
-import type { CanvasSize } from "./types";
+import type { CanvasSize, MaskBoundingBox } from "./types";
 
 export class CanvasHandler {
   private canvas: HTMLCanvasElement;
@@ -319,6 +319,46 @@ export class CanvasHandler {
       width: this.canvas.width,
       height: this.canvas.height,
     };
+  }
+
+  public getMaskBoundingBox(): MaskBoundingBox | undefined {
+    if (this.maskLines.length === 0) {
+      return undefined;
+    }
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    this.maskLines.forEach((line) => {
+      // Consider both start and end points and brush size
+      minX = Math.min(
+        minX,
+        line.startX - line.lineWidth / 2,
+        line.endX - line.lineWidth / 2,
+      );
+      minY = Math.min(
+        minY,
+        line.startY - line.lineWidth / 2,
+        line.endY - line.lineWidth / 2,
+      );
+      maxX = Math.max(
+        maxX,
+        line.startX + line.lineWidth / 2,
+        line.endX + line.lineWidth / 2,
+      );
+      maxY = Math.max(
+        maxY,
+        line.startY + line.lineWidth / 2,
+        line.endY + line.lineWidth / 2,
+      );
+    });
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    return { x: minX, y: minY, width, height };
   }
 
   public buildCanvasMask(): Promise<Blob | undefined> {
