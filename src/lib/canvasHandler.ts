@@ -16,7 +16,7 @@ export class CanvasHandler {
   private lastX = 0;
   private lastY = 0;
   private color = "black";
-  private brushSize = 10;
+  private brushSize = 100;
   private file: File | undefined;
   private MAX_SIZE_MB = 50;
   private MAX_SIZE_BYTES = this.MAX_SIZE_MB * 1024 * 1024;
@@ -47,6 +47,11 @@ export class CanvasHandler {
         this.preventDefaults.bind(this),
         false,
       );
+      this.dropZone.addEventListener(
+        eventName,
+        this.preventDefaults.bind(this),
+        false,
+      );
     });
 
     // Highlight drop area when item is dragged over it
@@ -59,7 +64,7 @@ export class CanvasHandler {
     });
 
     // Handle dropped files
-    container.addEventListener("drop", this.handleDrop.bind(this), false);
+    this.dropZone.addEventListener("drop", this.handleDrop.bind(this), false);
 
     this.canvas.addEventListener("mousedown", this.startDrawing.bind(this));
     this.canvas.addEventListener("mousemove", this.draw.bind(this));
