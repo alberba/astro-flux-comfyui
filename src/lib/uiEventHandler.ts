@@ -312,7 +312,7 @@ export class UIEventHandler {
                 <div class="w-2/3 bg-gray-200 rounded-full h-6 mb-4 overflow-hidden">
                   <div class="bg-indigo-600 h-6 rounded-full transition-all duration-300" style="width: ${percent}%;"></div>
                 </div>
-                <span class="text-indigo-700 font-semibold">${percent}%</span>`;
+                <span class="text-white text-shadow-lg font-semibold">${percent}%</span>`;
         dropZone.prepend(progress);
       } else if (state.generatedImageUrl) {
         const progress = document.getElementById("progressbar");
