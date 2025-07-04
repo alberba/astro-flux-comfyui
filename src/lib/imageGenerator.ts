@@ -80,6 +80,7 @@ export class ImageGenerator {
     steps: number;
     width: number;
     height: number;
+    denoise: number;
     lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {
@@ -128,6 +129,7 @@ export class ImageGenerator {
     steps: number;
     width: number;
     height: number;
+    denoise: number;
     lora?: string;
   }): Promise<{ image: string; seed: number }> {
     try {
@@ -185,6 +187,7 @@ export class ImageGenerator {
     steps: number;
     width: number;
     height: number;
+    denoise: number;
     lora?: string;
     maskWidth?: number;
     maskHeight?: number;

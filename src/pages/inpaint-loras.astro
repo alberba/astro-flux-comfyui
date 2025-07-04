@@ -5,7 +5,7 @@ import MainContainer from "../components/MainContainer.astro";
 ---
 
 <Layout title="Inpaint con Loras">
-  <MainContainer showLoraSelect={true}>
+  <MainContainer denoise="0.9" showLoraSelect={true}>
     <DropZone id="dropZone" slot="image-container" />
     <div slot="info-container">
       Sube una imagen, dibuja una máscara y si lo deseas, selecciona un

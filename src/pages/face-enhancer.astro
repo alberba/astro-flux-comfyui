@@ -5,7 +5,7 @@ import MainContainer from "../components/MainContainer.astro";
 ---
 
 <Layout title="Face Enhancer">
-  <MainContainer showLoraSelect={true}>
+  <MainContainer denoise="0.9" showLoraSelect={true}>
     <DropZone slot="image-container" id="dropZone" />
     <div slot="info-container">
       <p>
@@ -13,8 +13,8 @@ import MainContainer from "../components/MainContainer.astro";
         facial y el sistema la regenerará con más calidad.
       </p>
       <p>
-        Proceso <strong>muy lento</strong>, usarlo solo para modificar rostros alejados o
-        imágenes pequeñas. En imágenes grandes, no hay mejoras.
+        Proceso <strong>muy lento</strong>, usarlo solo para modificar rostros
+        alejados o imágenes pequeñas. En imágenes grandes, no hay mejoras.
       </p>
     </div>
     <div slot="tips-container">

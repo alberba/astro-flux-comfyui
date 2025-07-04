@@ -5,6 +5,7 @@ import PropsContainer from "./props/PropsContainer.astro";
 const props = Astro.props;
 interface Props {
   showLoraSelect?: boolean;
+  denoise?: string;
 }
 ---
 
@@ -26,7 +27,7 @@ interface Props {
         </div>
       </slot>
     </ImageContainer>
-    <PropsContainer />
+    <PropsContainer denoise={Astro.props.denoise} />
   </div>
   <aside
     class="flex h-fit max-w-xs flex-col gap-4 rounded-sm border bg-gray-50 p-6 shadow-lg"

@@ -12,6 +12,7 @@ interface UIValues {
   exSize: number;
   width: number;
   height: number;
+  denoise: number;
   lora?: string;
 }
 
@@ -37,6 +38,7 @@ export class UIEventHandler {
     this.bindSeedControls();
     this.bindCfgSync();
     this.bindStepsSync();
+    this.bindDenoiseSync();
 
     this.bindMaskButtons();
     this.bindFileUpload();
@@ -132,6 +134,10 @@ export class UIEventHandler {
 
   private bindStepsSync() {
     syncRangeAndNumber("steps-range", "steps-number");
+  }
+
+  private bindDenoiseSync() {
+    syncRangeAndNumber("denoise-range", "denoise-number");
   }
 
   private bindMaskButtons() {
@@ -471,6 +477,7 @@ export class UIEventHandler {
         steps: uiValues.steps,
         width: uiValues.width,
         height: uiValues.height,
+        denoise: uiValues.denoise,
         lora: uiValues.lora,
         maskWidth: maskBoundingBox?.width,
         maskHeight: maskBoundingBox?.height,
@@ -486,6 +493,7 @@ export class UIEventHandler {
       steps: uiValues.steps,
       width: uiValues.width,
       height: uiValues.height,
+      denoise: uiValues.denoise,
       lora: uiValues.lora,
     });
   }
@@ -500,6 +508,7 @@ export class UIEventHandler {
       steps: uiValues.steps,
       width: uiValues.width,
       height: uiValues.height,
+      denoise: uiValues.denoise,
       lora: uiValues.lora,
     });
   }
@@ -513,13 +522,14 @@ export class UIEventHandler {
     const exSize = this.parseInputInt("ex-size", 1);
     const width = this.parseInputInt("width", 1024);
     const height = this.parseInputInt("height", 1024);
+    const denoise = this.parseInputFloat("denoise-number", 0.95);
     const loraSelect = document.getElementById(
       "loras-select",
     ) as HTMLSelectElement;
 
     const lora =
       loraSelect.value === "-- Ningún Lora --" ? "" : loraSelect.value;
-    return { prompt, seed, cfg, steps, exSize, width, height, lora };
+    return { prompt, seed, cfg, steps, exSize, width, height, denoise, lora };
   }
 
   private isMaskGeneration(): boolean {
