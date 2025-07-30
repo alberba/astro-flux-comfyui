@@ -15,7 +15,7 @@ function getApiUrl(): string {
     window.location.hostname === "127.0.0.1";
   const apiUrl = isLocal
     ? "http://localhost:8000/lorasuib/api"
-    : "http://ia-ltim.uib.es/lorasuib/api";
+    : "https://ia-ltim.uib.es/lorasuib/api";
 
   return apiUrl;
 }
