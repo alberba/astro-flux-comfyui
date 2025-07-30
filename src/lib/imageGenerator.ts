@@ -140,29 +140,36 @@ export class ImageGenerator {
       this._startProgressTimeout();
       console.log("API URL:", this.apiUrl);
 
-      const formData = new FormData();
-      formData.append("clientId", this.clientId);
-
-      for (const key in params) {
-        if (Object.prototype.hasOwnProperty.call(params, key)) {
-          const value = params[key as keyof typeof params];
-          if (value !== undefined) {
-            if (key === "mask" && value instanceof Blob) {
-              formData.append("mask", value, "mask.png");
-            } else if (key === "image" && value instanceof Blob) {
-              formData.append("image", value, "image.png");
-            } else if (typeof value === "number") {
-              formData.append(key, value.toString());
-            } else if (typeof value === "string") {
-              formData.append(key, value);
-            }
-          }
-        }
-      }
+      const toBase64 = async (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            // `reader.result` será algo como "data:image/png;base64,AAAA…"
+            const dataUrl = reader.result as string;
+            const [, base64] = dataUrl.split(",", 2);
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+      const payload: Record<string, any> = {
+        prompt: params.prompt,
+        width: params.width,
+        height: params.height,
+        seed: params.seed,
+        cfg: params.cfg,
+        steps: params.steps,
+        denoise: params.denoise,
+        lora: params.lora ?? "",
+        image_b64: await toBase64(params.image),
+        mask_b64: await toBase64(params.mask),
+      };
 
       const response = await fetch(`${this.apiUrl}`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error("Failed to generate image");
@@ -202,29 +209,39 @@ export class ImageGenerator {
       params.maskWidth = Math.ceil(params.maskWidth!);
       params.maskHeight = Math.ceil(params.maskHeight!);
 
-      const formData = new FormData();
-      formData.append("clientId", this.clientId);
+      const toBase64 = async (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            // `reader.result` será algo como "data:image/png;base64,AAAA…"
+            const dataUrl = reader.result as string;
+            const [, base64] = dataUrl.split(",", 2);
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
 
-      for (const key in params) {
-        if (Object.prototype.hasOwnProperty.call(params, key)) {
-          const value = params[key as keyof typeof params];
-          if (value !== undefined) {
-            if (key === "mask" && value instanceof Blob) {
-              formData.append("mask", value, "mask.png");
-            } else if (key === "image" && value instanceof Blob) {
-              formData.append("image", value, "image.png");
-            } else if (typeof value === "number") {
-              formData.append(key, value.toString());
-            } else if (typeof value === "string") {
-              formData.append(key, value);
-            }
-          }
-        }
-      }
+      const payload: Record<string, any> = {
+        prompt: params.prompt,
+        width: params.width,
+        height: params.height,
+        seed: params.seed,
+        cfg: params.cfg,
+        steps: params.steps,
+        denoise: params.denoise,
+        lora: params.lora ?? "",
+        maskWidth: params.maskWidth,
+        maskHeight: params.maskHeight,
+        image_b64: await toBase64(params.image),
+        mask_b64: await toBase64(params.mask),
+      };
 
       const response = await fetch(`${this.apiUrl}`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error("Failed to generate image");
