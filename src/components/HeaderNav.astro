@@ -7,18 +7,18 @@ const className = ["flex justify-center", Astro.props.class]
 <nav class={className}>
   <div class="flex justify-center whitespace-nowrap">
     <a
-      href="/lorasuib/"
+      href="/"
       class="tab-link {Astro.url.pathname === '/' ? 'active-tab' : ''} rounded-t-lg px-4 py-2 font-semibold whitespace-nowrap text-gray-700 hover:bg-indigo-100"
       >Generación de imágenes</a
     >
     <a
-      href="/lorasuib/inpaint-loras/"
+      href="/inpaint-loras/"
       class="tab-link {Astro.url.pathname === '/inpaint-loras' ? 'active-tab' : ''} rounded-t-lg px-4 py-2 font-semibold whitespace-nowrap text-gray-700 hover:bg-indigo-100"
     >
       Inpaint con Loras
     </a>
     <a
-      href="/lorasuib/face-enhancer/"
+      href="/face-enhancer/"
       class="tab-link {Astro.url.pathname === '/face-enhancer' ? 'active-tab' : ''} rounded-t-lg px-4 py-2 font-semibold whitespace-nowrap text-gray-700 hover:bg-indigo-100"
     >
       Face Enhancer
