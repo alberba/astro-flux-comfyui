@@ -3,6 +3,8 @@ import { defineConfig } from "astro/config";
 
 import tailwindcss from "@tailwindcss/vite";
 
+import vercel from "@astrojs/vercel";
+
 // https://astro.build/config
 export default defineConfig({
   base: "/lorasuib/",
@@ -12,4 +14,6 @@ export default defineConfig({
     // @ts-ignore
     plugins: [tailwindcss()],
   },
+
+  adapter: vercel(),
 });
