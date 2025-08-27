@@ -7,9 +7,6 @@ import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
-  base: "/lorasuib/",
-  outDir: "./build/lorasuib",
-
   vite: {
     // @ts-ignore
     plugins: [tailwindcss()],
